@@ -42,9 +42,9 @@ func (b *Bridge) verifySwapoutTx(txHash string, logIndex int, allowUnstable bool
 	swapInfo.LogIndex = logIndex                      // LogIndex
 	swapInfo.FromChainID = b.ChainConfig.GetChainID() // FromChainID
 
-	tx, err := b.GetTransaction(txHash)
-	if err != nil {
-		log.Debug("[verifySwapout] "+b.ChainConfig.BlockChain+" Bridge::GetTransaction fail", "tx", txHash, "err", err)
+	tx, txErr := b.GetTransaction(txHash)
+	if txErr != nil {
+		log.Debug("[verifySwapout] "+b.ChainConfig.BlockChain+" Bridge::GetTransaction fail", "tx", txHash, "err", txErr)
 		return swapInfo, tokens.ErrTxNotFound
 	}
 
@@ -53,23 +53,26 @@ func (b *Bridge) verifySwapoutTx(txHash string, logIndex int, allowUnstable bool
 		return swapInfo, errTxResultType
 	}
 
-	errc := b.checkTxStatus(txres, allowUnstable)
-	if errc != nil {
-		return swapInfo, errc
+	statusErr := b.checkTxStatus(txres, allowUnstable)
+	if statusErr != nil {
+		return swapInfo, statusErr
 	}
 
 	events := fliterReceipts(txres.ReceiptsOutcome, b.ChainConfig.RouterContract)
-	event, errl := fliterEvent(events)
-	if errl != nil {
+	event, fliterErr := fliterEvent(events)
+	if fliterErr != nil {
 		return swapInfo, errTxLogParse
 	}
 
-	errp := b.parseNep141SwapoutTxEvent(swapInfo, event)
-	if errp != nil {
-		return swapInfo, errp
+	parseErr := b.parseNep141SwapoutTxEvent(swapInfo, event)
+	if parseErr != nil {
+		return swapInfo, parseErr
 	}
 
-	b.checkSwapoutInfo(swapInfo)
+	checkErr := b.checkSwapoutInfo(swapInfo)
+	if checkErr != nil {
+		return swapInfo, checkErr
+	}
 
 	if !allowUnstable {
 		log.Info("verify swapout pass",
