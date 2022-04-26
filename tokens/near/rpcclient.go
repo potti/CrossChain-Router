@@ -18,22 +18,7 @@ func SetRPCTimeout(timeout int) {
 	rpcTimeout = timeout
 }
 
-// GetLatestBlock get latest block
-func GetLatestBlock(url string) (string, error) {
-	request := &client.Request{}
-	request.Method = "status"
-	request.Params = []string{}
-	request.ID = int(time.Now().UnixNano())
-	request.Timeout = rpcTimeout
-	var result NetworkStatus
-	err := client.RPCPostRequest(url, request, &result)
-	if err != nil {
-		return "0", err
-	}
-	return result.SyncInfo.LatestBlockHeight, nil
-}
-
-func GetBlockByHash(url, hash string) (string, error) {
+func GetLatestBlockNumberByHash(url, hash string) (uint64, error) {
 	request := &client.Request{}
 	request.Method = "block"
 	request.Params = map[string]string{"block_id": hash}
@@ -42,18 +27,24 @@ func GetBlockByHash(url, hash string) (string, error) {
 	var result BlockDetail
 	err := client.RPCPostRequest(url, request, &result)
 	if err != nil {
-		return "0", err
+		return 0, err
 	}
-	return result.Header.Height, nil
+	return common.GetUint64FromStr(result.Header.Height)
 }
 
 // GetLatestBlockNumber get latest block height
-func GetLatestBlockNumber(url string) (height uint64, err error) {
-	block, err := GetLatestBlock(url)
+func GetLatestBlockNumber(url string) (uint64, error) {
+	request := &client.Request{}
+	request.Method = "status"
+	request.Params = []string{}
+	request.ID = int(time.Now().UnixNano())
+	request.Timeout = rpcTimeout
+	var result NetworkStatus
+	err := client.RPCPostRequest(url, request, &result)
 	if err != nil {
 		return 0, err
 	}
-	return common.GetUint64FromStr(block)
+	return common.GetUint64FromStr(result.SyncInfo.LatestBlockHeight)
 }
 
 // GetTransactionByHash get tx by hash

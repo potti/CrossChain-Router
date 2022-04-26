@@ -1,9 +1,5 @@
 package near
 
-import (
-	"math/big"
-)
-
 type TransactionResult struct {
 	Status             Status             `json:"status"`
 	Transaction        Transaction        `json:"transaction"`
@@ -62,12 +58,12 @@ type ReceiptsOutcome struct {
 }
 
 type Outcome struct {
-	ExecutorID  string        `json:"executor_id"`
-	GasBurnt    int64         `json:"gas_burnt"`
-	Logs        []interface{} `json:"logs"`
-	ReceiptIds  []string      `json:"receipt_ids"`
-	Status      Status        `json:"status"`
-	TokensBurnt string        `json:"tokens_burnt"`
+	ExecutorID  string   `json:"executor_id"`
+	GasBurnt    int64    `json:"gas_burnt"`
+	Logs        []string `json:"logs"`
+	ReceiptIds  []string `json:"receipt_ids"`
+	Status      Status   `json:"status"`
+	TokensBurnt string   `json:"tokens_burnt"`
 }
 
 type Proof struct {
@@ -81,12 +77,12 @@ type Action struct {
 }
 
 type Transfer struct {
-	Deposit big.Int
+	Deposit string
 }
 
 type FunctionCall struct {
 	MethodName string
 	Args       []byte
 	Gas        uint64
-	Deposit    big.Int
+	Deposit    string
 }

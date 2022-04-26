@@ -33,14 +33,32 @@ func (b *Bridge) VerifyTokenConfig(tokenCfg *tokens.TokenConfig) error {
 
 // GetLatestBlockNumber gets latest block number
 // For ripple, GetLatestBlockNumber returns current ledger version
-func (b *Bridge) GetLatestBlockNumber() (num uint64, err error) {
-	return
+func (b *Bridge) GetLatestBlockNumber() (uint64, error) {
+	urls := b.GatewayConfig.APIAddress
+	for _, url := range urls {
+		result, err := GetLatestBlockNumber(url)
+		if err == nil {
+			return result, nil
+		}
+	}
+	return 0, tokens.ErrRPCQueryError
 }
 
 //GetLatestBlockNumberOf gets latest block number from single api
 // For ripple, GetLatestBlockNumberOf returns current ledger version
 func (b *Bridge) GetLatestBlockNumberOf(apiAddress string) (uint64, error) {
-	return 0, nil
+	return GetLatestBlockNumber(apiAddress)
+}
+
+func (b *Bridge) GetLatestBlockNumberByHash(txhash string) (uint64, error) {
+	urls := b.GatewayConfig.APIAddress
+	for _, url := range urls {
+		result, err := GetLatestBlockNumberByHash(url, txhash)
+		if err == nil {
+			return result, nil
+		}
+	}
+	return 0, tokens.ErrRPCQueryError
 }
 
 // GetTransaction impl
@@ -62,11 +80,6 @@ func (b *Bridge) GetTransactionByHash(txHash string) (result *TransactionResult,
 
 // GetTransactionStatus impl
 func (b *Bridge) GetTransactionStatus(txHash string) (status *tokens.TxStatus, err error) {
-	return
-}
-
-// GetBlockHash gets block hash
-func (b *Bridge) GetBlockHash(num uint64) (hash string, err error) {
 	return
 }
 
