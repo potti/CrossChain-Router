@@ -44,7 +44,7 @@ func GetLatestBlockNumber(url string) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return common.GetUint64FromStr(result.SyncInfo.LatestBlockHeight)
+	return result.SyncInfo.LatestBlockHeight, nil
 }
 
 // GetTransactionByHash get tx by hash

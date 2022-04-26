@@ -36,7 +36,7 @@ func (b *Bridge) VerifyTransaction(txHash string, args *tokens.VerifyArgs) (*tok
 }
 
 func (b *Bridge) verifySwapoutTx(txHash string, logIndex int, allowUnstable bool) (*tokens.SwapTxInfo, error) {
-	swapInfo := &tokens.SwapTxInfo{}
+	swapInfo := &tokens.SwapTxInfo{SwapInfo: tokens.SwapInfo{ERC20SwapInfo: &tokens.ERC20SwapInfo{}}}
 	swapInfo.SwapType = tokens.ERC20SwapType          // SwapType
 	swapInfo.Hash = strings.ToLower(txHash)           // Hash
 	swapInfo.LogIndex = logIndex                      // LogIndex
@@ -65,15 +65,11 @@ func (b *Bridge) verifySwapoutTx(txHash string, logIndex int, allowUnstable bool
 	}
 
 	errp := b.parseNep141SwapoutTxEvent(swapInfo, event)
-	if errl != nil {
+	if errp != nil {
 		return swapInfo, errp
 	}
 
 	b.checkSwapoutInfo(swapInfo)
-
-	if err != nil {
-		return swapInfo, err
-	}
 
 	if !allowUnstable {
 		log.Info("verify swapout pass",
@@ -115,7 +111,7 @@ func (b *Bridge) checkTxStatus(txres *TransactionResult, allowUnstable bool) err
 			return errh1
 		}
 
-		txHeight, errh2 := b.GetLatestBlockNumberByHash(txres.Transaction.Hash)
+		txHeight, errh2 := b.GetLatestBlockNumberByHash(txres.TransactionOutcome.BlockHash)
 		if errh2 != nil {
 			return errh2
 		}
@@ -132,7 +128,6 @@ func (b *Bridge) checkTxStatus(txres *TransactionResult, allowUnstable bool) err
 }
 
 func (b *Bridge) parseNep141SwapoutTxEvent(swapInfo *tokens.SwapTxInfo, log []string) error {
-
 	swapInfo.ERC20SwapInfo.Token = log[2]
 	swapInfo.From = log[4]
 	swapInfo.Bind = log[6]

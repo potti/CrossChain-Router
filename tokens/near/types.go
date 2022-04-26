@@ -23,7 +23,7 @@ type NetworkStatus struct {
 
 type SyncInfo struct {
 	LatestBlockHash   string `json:"latest_block_hash"`
-	LatestBlockHeight string `json:"latest_block_height"`
+	LatestBlockHeight uint64 `json:"latest_block_height"`
 }
 
 type Status struct {
