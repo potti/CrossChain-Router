@@ -114,7 +114,7 @@ func (b *Bridge) checkTxStatus(txres *TransactionResult, allowUnstable bool) err
 			return errh1
 		}
 
-		txHeight, errh2 := b.GetLatestBlockNumberByHash(txres.TransactionOutcome.BlockHash)
+		txHeight, errh2 := b.GetBlockNumberByHash(txres.TransactionOutcome.BlockHash)
 		if errh2 != nil {
 			return errh2
 		}

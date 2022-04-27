@@ -8,6 +8,12 @@ import (
 
 // MPCSignTransaction mpc sign raw tx
 func (b *Bridge) MPCSignTransaction(rawTx interface{}, args *tokens.BuildTxArgs) (signedTx interface{}, txHash string, err error) {
+	rawTxStruct := rawTx.(*RawTransaction)
+	signedTx, errf := rawTxStruct.Serialize()
+	if errf != nil {
+		err = errf
+		return
+	}
 	return
 }
 

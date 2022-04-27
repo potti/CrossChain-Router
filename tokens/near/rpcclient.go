@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anyswap/CrossChain-Router/v3/common"
 	"github.com/anyswap/CrossChain-Router/v3/rpc/client"
+	"github.com/anyswap/CrossChain-Router/v3/tokens"
 )
 
 var (
@@ -18,7 +18,7 @@ func SetRPCTimeout(timeout int) {
 	rpcTimeout = timeout
 }
 
-func GetLatestBlockNumberByHash(url, hash string) (uint64, error) {
+func GetBlockNumberByHash(url, hash string) (uint64, error) {
 	request := &client.Request{}
 	request.Method = "block"
 	request.Params = map[string]string{"block_id": hash}
@@ -29,29 +29,43 @@ func GetLatestBlockNumberByHash(url, hash string) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return common.GetUint64FromStr(result.Header.Height)
+	return result.Header.Height, nil
+}
+
+func GetLatestBlockHash(url string) (string, error) {
+	request := &client.Request{}
+	request.Method = "block"
+	request.Params = map[string]string{"finality": "final"}
+	request.ID = int(time.Now().UnixNano())
+	request.Timeout = rpcTimeout
+	var result BlockDetail
+	err := client.RPCPostRequest(url, request, &result)
+	if err != nil {
+		return "", err
+	}
+	return result.Header.Hash, nil
 }
 
 // GetLatestBlockNumber get latest block height
 func GetLatestBlockNumber(url string) (uint64, error) {
 	request := &client.Request{}
-	request.Method = "status"
-	request.Params = []string{}
+	request.Method = "block"
+	request.Params = map[string]string{"finality": "final"}
 	request.ID = int(time.Now().UnixNano())
 	request.Timeout = rpcTimeout
-	var result NetworkStatus
+	var result BlockDetail
 	err := client.RPCPostRequest(url, request, &result)
 	if err != nil {
 		return 0, err
 	}
-	return result.SyncInfo.LatestBlockHeight, nil
+	return result.Header.Height, nil
 }
 
 // GetTransactionByHash get tx by hash
-func GetTransactionByHash(url, txHash string) (*TransactionResult, error) {
+func GetTransactionByHash(url, txHash, sendId string) (*TransactionResult, error) {
 	request := &client.Request{}
 	request.Method = "tx"
-	request.Params = []string{txHash, "userdemo.testnet"}
+	request.Params = []string{txHash, sendId}
 	request.ID = int(time.Now().UnixNano())
 	request.Timeout = rpcTimeout
 	var result TransactionResult
@@ -61,6 +75,38 @@ func GetTransactionByHash(url, txHash string) (*TransactionResult, error) {
 	}
 	if !strings.EqualFold(result.Transaction.Hash, txHash) {
 		return nil, fmt.Errorf("get tx hash mismatch, have %v want %v", result.Transaction.Hash, txHash)
+	}
+	return &result, nil
+}
+
+// GetLatestBlockNumber get latest block height
+func GetAccountNonce(url, account, publicKey string) (uint64, error) {
+	request := &client.Request{}
+	request.Method = "query"
+	request.Params = map[string]string{"request_type": "view_access_key", "finality": "final", "account_id": account, "public_key": publicKey}
+	request.ID = int(time.Now().UnixNano())
+	request.Timeout = rpcTimeout
+	var result map[string]interface{}
+	err := client.RPCPostRequest(url, request, &result)
+	if err != nil {
+		return 0, err
+	}
+	if result["nonce"] == nil {
+		return 0, tokens.ErrRPCQueryError
+	}
+	return uint64(result["nonce"].(float64)), nil
+}
+
+func BroadcastTxCommit(url, raw string) (*TransactionResult, error) {
+	request := &client.Request{}
+	request.Method = "broadcast_tx_commit"
+	request.Params = []string{raw}
+	request.ID = int(time.Now().UnixNano())
+	request.Timeout = rpcTimeout
+	var result TransactionResult
+	err := client.RPCPostRequest(url, request, &result)
+	if err != nil {
+		return nil, err
 	}
 	return &result, nil
 }

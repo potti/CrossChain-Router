@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/BurntSushi/toml v0.4.1
 	github.com/btcsuite/btcd v0.22.0-beta
+	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/deckarep/golang-set v1.7.1
 	github.com/didip/tollbooth/v6 v6.1.1
@@ -17,6 +18,7 @@ require (
 	github.com/lestrrat-go/strftime v1.0.4 // indirect
 	github.com/mr-tron/base58 v1.2.0
 	github.com/pborman/uuid v1.2.1
+	github.com/shopspring/decimal v1.3.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/syndtr/goleveldb v1.0.1-0.20210305035536-64b5b1c73954

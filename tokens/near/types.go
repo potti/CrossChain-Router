@@ -1,5 +1,9 @@
 package near
 
+import (
+	"github.com/anyswap/CrossChain-Router/v3/tokens/near/serialize"
+)
+
 type TransactionResult struct {
 	Status             Status             `json:"status"`
 	Transaction        Transaction        `json:"transaction"`
@@ -13,17 +17,7 @@ type BlockDetail struct {
 
 type BlockHeader struct {
 	Hash   string `json:"hash"`
-	Height string `json:"string"`
-}
-
-type NetworkStatus struct {
-	ChainId  string   `json:"chain_id"`
-	SyncInfo SyncInfo `json:"sync_info"`
-}
-
-type SyncInfo struct {
-	LatestBlockHash   string `json:"latest_block_hash"`
-	LatestBlockHeight uint64 `json:"latest_block_height"`
+	Height uint64 `json:"height"`
 }
 
 type Status struct {
@@ -36,7 +30,7 @@ type Status struct {
 type Transaction struct {
 	Actions    []Action `json:"actions"`
 	Hash       string   `json:"hash"`
-	Nonce      int      `json:"nonce"`
+	Nonce      uint64   `json:"nonce"`
 	PublicKey  string   `json:"public_key"`
 	ReceiverID string   `json:"receiver_id"`
 	Signature  string   `json:"signature"`
@@ -85,4 +79,18 @@ type FunctionCall struct {
 	Args       []byte
 	Gas        uint64
 	Deposit    string
+}
+
+type RawTransaction struct {
+	SignerId   serialize.String
+	PublicKey  serialize.PublicKey
+	Nonce      serialize.U64
+	ReceiverId serialize.String
+	BlockHash  serialize.BlockHash
+	Actions    []serialize.IAction
+}
+
+type SignatureTransaction struct {
+	Sig serialize.Signature
+	Tx  *RawTransaction
 }
