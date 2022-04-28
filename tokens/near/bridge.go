@@ -84,6 +84,8 @@ func (b *Bridge) GetTransactionByHash(txHash string) (result *TransactionResult,
 		result, err = GetTransactionByHash(url, txHash, router)
 		if err == nil {
 			return result, nil
+		} else {
+			log.Info("GetTransactionByHash", "GetTransactionByHash", txHash, "url", url, "router", router, "err", err)
 		}
 	}
 	return nil, tokens.ErrTxNotFound
@@ -105,7 +107,7 @@ func (b *Bridge) GetTransactionStatus(txHash string) (status *tokens.TxStatus, e
 	}
 
 	// Check tx status
-	if txres.Status.Failure != "" {
+	if txres.Status.Failure != nil {
 		log.Warn("Near tx status is not success", "result", txres.Status.Failure)
 		return nil, tokens.ErrTxWithWrongStatus
 	}

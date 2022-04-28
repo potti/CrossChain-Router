@@ -5,9 +5,14 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"strings"
 
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
 	"github.com/btcsuite/btcutil/base58"
+)
+
+var (
+	ed25519Prefix = "ed25519:"
 )
 
 // IsValidAddress check address
@@ -61,4 +66,9 @@ func PublicKeyToString(pub []byte) string {
 
 func PublicKeyToAddress(pub []byte) string {
 	return hex.EncodeToString(pub)
+}
+
+func StringToPublicKey(pub string) ed25519.PublicKey {
+	pubKey := base58.Decode(strings.TrimPrefix(pub, ed25519Prefix))
+	return ed25519.PublicKey(pubKey)
 }

@@ -1,7 +1,7 @@
 package near
 
 import (
-	"github.com/anyswap/CrossChain-Router/v3/tokens/near/serialize"
+	"github.com/near/borsh-go"
 )
 
 type TransactionResult struct {
@@ -21,10 +21,10 @@ type BlockHeader struct {
 }
 
 type Status struct {
-	SuccessValue     string `json:"SuccessValue,omitempty"`
-	SuccessReceiptId string `json:"SuccessReceiptId,omitempty"`
-	Failure          string `json:"Failure,omitempty"`
-	Unknown          string `json:"Unknown,omitempty"`
+	SuccessValue     interface{} `json:"SuccessValue,omitempty"`
+	SuccessReceiptId interface{} `json:"SuccessReceiptId,omitempty"`
+	Failure          interface{} `json:"Failure,omitempty"`
+	Unknown          interface{} `json:"Unknown,omitempty"`
 }
 
 type Transaction struct {
@@ -65,7 +65,9 @@ type Proof struct {
 	Hash      string `json:"hash"`
 }
 
+// Action simulates an enum for Borsh encoding.
 type Action struct {
+	Enum         borsh.Enum `borsh_enum:"true"` // treat struct as complex enum when serializing/deserializing
 	FunctionCall FunctionCall
 	Transfer     Transfer
 }
@@ -81,16 +83,29 @@ type FunctionCall struct {
 	Deposit    string
 }
 
+// A Transaction encodes a NEAR transaction.
 type RawTransaction struct {
-	SignerId   serialize.String
-	PublicKey  serialize.PublicKey
-	Nonce      serialize.U64
-	ReceiverId serialize.String
-	BlockHash  serialize.BlockHash
-	Actions    []serialize.IAction
+	SignerID   string
+	PublicKey  PublicKey
+	Nonce      uint64
+	ReceiverID string
+	BlockHash  [32]byte
+	Actions    []Action
 }
 
-type SignatureTransaction struct {
-	Sig serialize.Signature
-	Tx  *RawTransaction
+// PublicKey encoding for NEAR.
+type PublicKey struct {
+	KeyType uint8
+	Data    [32]byte
+}
+
+type SignedTransaction struct {
+	Transaction RawTransaction
+	Signature   Signature
+}
+
+// A Signature used for signing transaction.
+type Signature struct {
+	KeyType uint8
+	Data    [64]byte
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
 	"github.com/anyswap/CrossChain-Router/v3/tokens/tests/config"
 	"github.com/anyswap/CrossChain-Router/v3/tokens/tests/eth"
+	"github.com/anyswap/CrossChain-Router/v3/tokens/tests/near"
 	"github.com/anyswap/CrossChain-Router/v3/tokens/tests/template"
 	"github.com/urfave/cli/v2"
 )
@@ -77,6 +78,8 @@ func initRouter() {
 	switch testCfg.Module {
 	case "eth":
 		bridge = eth.NewCrossChainBridge()
+	case "near":
+		bridge = near.NewCrossChainBridge()
 	case "template":
 		bridge = template.NewCrossChainBridge()
 	default:

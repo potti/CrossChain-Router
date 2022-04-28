@@ -5,7 +5,7 @@ Identifier = "routerswap#test"
 SwapType = "erc20swap"
 
 # test module name
-Module = "eth"
+Module = "near"
 
 # rpc listen port
 Port = 11556
@@ -25,7 +25,7 @@ AllChainIDs = ["56", "25"]
 
 
 [Gateway]
-APIAddress = ["http://127.0.0.1:6711"]
+APIAddress = ["https://archival-rpc.testnet.near.org"]
 
 
 # chain config

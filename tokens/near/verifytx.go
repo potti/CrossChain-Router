@@ -104,6 +104,8 @@ func fliterEvent(logs []string) ([]string, error) {
 }
 
 func (b *Bridge) checkTxStatus(txres *TransactionResult, allowUnstable bool) error {
+	log.Info("checkTxStatus", "txres:", txres, "allowUnstable", allowUnstable)
+
 	if txres.Status.Failure != "" {
 		return tokens.ErrTxIsNotValidated
 	}
@@ -197,4 +199,32 @@ func (b *Bridge) checkSwapoutInfo(swapInfo *tokens.SwapTxInfo) error {
 		return tokens.ErrWrongBindAddress
 	}
 	return nil
+}
+
+func (b *Bridge) getSwapTxReceipt(swapInfo *tokens.SwapTxInfo, allowUnstable bool) ([]string, error) {
+	log.Info("getSwapTxReceipt", "swapInfo:", swapInfo, "allowUnstable", allowUnstable)
+	tx, txErr := b.GetTransaction(swapInfo.Hash)
+	if txErr != nil {
+		log.Info("GetTransaction", "err:", txErr)
+		log.Debug("[verifySwapout] "+b.ChainConfig.BlockChain+" Bridge::GetTransaction fail", "tx", swapInfo.Hash, "err", txErr)
+		return nil, tokens.ErrTxNotFound
+	}
+
+	txres, ok := tx.(*TransactionResult)
+	if !ok {
+		return nil, errTxResultType
+	}
+
+	statusErr := b.checkTxStatus(txres, allowUnstable)
+	if statusErr != nil {
+		return nil, statusErr
+	}
+
+	events := fliterReceipts(txres.ReceiptsOutcome, b.ChainConfig.RouterContract)
+	event, fliterErr := fliterEvent(events)
+	if fliterErr != nil {
+		return nil, errTxLogParse
+	}
+	log.Info("getSwapTxReceipt", "event:", event)
+	return event, nil
 }

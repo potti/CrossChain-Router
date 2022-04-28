@@ -1,6 +1,7 @@
 package near
 
 import (
+	"encoding/base64"
 	"fmt"
 	"strings"
 	"time"
@@ -97,16 +98,16 @@ func GetAccountNonce(url, account, publicKey string) (uint64, error) {
 	return uint64(result["nonce"].(float64)), nil
 }
 
-func BroadcastTxCommit(url, raw string) (*TransactionResult, error) {
+func BroadcastTxCommit(url string, signedTx []byte) (string, error) {
 	request := &client.Request{}
 	request.Method = "broadcast_tx_commit"
-	request.Params = []string{raw}
+	request.Params = []string{base64.StdEncoding.EncodeToString(signedTx)}
 	request.ID = int(time.Now().UnixNano())
 	request.Timeout = rpcTimeout
 	var result TransactionResult
 	err := client.RPCPostRequest(url, request, &result)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return &result, nil
+	return result.Transaction.Hash, nil
 }
