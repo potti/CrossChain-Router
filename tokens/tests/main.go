@@ -157,6 +157,8 @@ func process(opts map[string]string) error {
 	}
 	registerOK := false
 	infos, errs := bridge.RegisterSwap(txid, registerArgs)
+	log.Info("RegisterSwap res", "len", len(infos), "swapInfo", infos[0])
+
 	for i, err := range errs {
 		if err == nil && infos[i] != nil {
 			registerOK = true

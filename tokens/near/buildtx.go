@@ -13,6 +13,8 @@ import (
 
 // BuildRawTransaction build raw tx
 func (b *Bridge) BuildRawTransaction(args *tokens.BuildTxArgs) (rawTx interface{}, err error) {
+	log.Info("BuildRawTransaction", "args.From", args.From, "args.To", args.To, "args.ToChainID", args.ToChainID.String(),
+		"tokenId", args.GetTokenID(), "SwapType", args.SwapType, "ERC20SwapInfo", args.ERC20SwapInfo)
 	if !params.IsTestMode && args.ToChainID.String() != b.ChainConfig.ChainID {
 		return nil, tokens.ErrToChainIDMismatch
 	}

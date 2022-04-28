@@ -12,7 +12,7 @@ Port = 11556
 
 # use private key instead of mpc signing
 SignWithPrivateKey = "0x1111111111111111111111111111111111111111111111111111111111111111"
-SignerAddress = "0x1111111111111111111111111111111111111111"
+SignerAddress = "r1.crossdemo.testnet"
 
 # allow call into router from contract
 AllowCallByContract = false
@@ -21,7 +21,7 @@ AllowCallByContract = false
 IsDebugMode = true
 
 # all chain ids (pass 'miss token config' checking)
-AllChainIDs = ["56", "25"]
+AllChainIDs = ["123", "1337"]
 
 
 [Gateway]
@@ -30,9 +30,9 @@ APIAddress = ["https://archival-rpc.testnet.near.org"]
 
 # chain config
 [Chain]
-ChainID = "56"
-BlockChain = "bsc"
-RouterContract = "0x92c079d3155c2722dbf7e65017a5baf9cd15561c"
+ChainID = "123"
+BlockChain = "near"
+RouterContract = "r1.crossdemo.testnet"
 Confirmations  = 1
 InitialHeight  = 0
 
@@ -42,9 +42,9 @@ InitialHeight  = 0
 TokenID         = "anyBNB"
 Decimals        = 18
 ContractVersion = 6
-ContractAddress = "0x49974c3c99f4e74d08845c31d3f4f16fdc264ebd"
+ContractAddress = "demotoken.crossdemo.testnet"
 Underlying      = "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"
-RouterContract  = "0x92c079d3155c2722dbf7e65017a5baf9cd15561c"
+RouterContract  = "r1.crossdemo.testnet"
 
 
 [Swap]

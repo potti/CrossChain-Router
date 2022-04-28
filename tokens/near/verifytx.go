@@ -23,6 +23,7 @@ func (b *Bridge) VerifyMsgHash(rawTx interface{}, msgHashes []string) (err error
 
 // VerifyTransaction impl
 func (b *Bridge) VerifyTransaction(txHash string, args *tokens.VerifyArgs) (*tokens.SwapTxInfo, error) {
+	log.Info("VerifyTransaction", "txHash", txHash, "args", args)
 	swapType := args.SwapType
 	logIndex := args.LogIndex
 	allowUnstable := args.AllowUnstable
@@ -104,9 +105,8 @@ func fliterEvent(logs []string) ([]string, error) {
 }
 
 func (b *Bridge) checkTxStatus(txres *TransactionResult, allowUnstable bool) error {
-	log.Info("checkTxStatus", "txres:", txres, "allowUnstable", allowUnstable)
 
-	if txres.Status.Failure != "" {
+	if txres.Status.Failure != nil {
 		return tokens.ErrTxIsNotValidated
 	}
 
@@ -132,22 +132,26 @@ func (b *Bridge) checkTxStatus(txres *TransactionResult, allowUnstable bool) err
 	return nil
 }
 
-func (b *Bridge) parseNep141SwapoutTxEvent(swapInfo *tokens.SwapTxInfo, log []string) error {
-	swapInfo.ERC20SwapInfo.Token = log[2]
-	swapInfo.From = log[4]
-	swapInfo.Bind = log[6]
+func (b *Bridge) parseNep141SwapoutTxEvent(swapInfo *tokens.SwapTxInfo, event []string) error {
 
-	amount, erra := common.GetBigIntFromStr(log[8])
+	log.Info("parseNep141SwapoutTxEvent", "log", event)
+	swapInfo.ERC20SwapInfo.Token = event[2]
+	swapInfo.From = event[4]
+	swapInfo.Bind = event[6]
+
+	amount, erra := common.GetBigIntFromStr(event[8])
 	if erra != nil {
 		return erra
 	}
 	swapInfo.Value = amount
 
-	toChainID, errt := common.GetBigIntFromStr(log[12])
+	toChainID, errt := common.GetBigIntFromStr(event[12])
 	if errt != nil {
 		return errt
 	}
 	swapInfo.ToChainID = toChainID
+
+	log.Info("ERC20SwapInfo", "ERC20SwapInfo", swapInfo.ERC20SwapInfo)
 
 	tokenCfg := b.GetTokenConfig(swapInfo.ERC20SwapInfo.Token)
 	if tokenCfg == nil {
@@ -202,10 +206,8 @@ func (b *Bridge) checkSwapoutInfo(swapInfo *tokens.SwapTxInfo) error {
 }
 
 func (b *Bridge) getSwapTxReceipt(swapInfo *tokens.SwapTxInfo, allowUnstable bool) ([]string, error) {
-	log.Info("getSwapTxReceipt", "swapInfo:", swapInfo, "allowUnstable", allowUnstable)
 	tx, txErr := b.GetTransaction(swapInfo.Hash)
 	if txErr != nil {
-		log.Info("GetTransaction", "err:", txErr)
 		log.Debug("[verifySwapout] "+b.ChainConfig.BlockChain+" Bridge::GetTransaction fail", "tx", swapInfo.Hash, "err", txErr)
 		return nil, tokens.ErrTxNotFound
 	}
@@ -225,6 +227,5 @@ func (b *Bridge) getSwapTxReceipt(swapInfo *tokens.SwapTxInfo, allowUnstable boo
 	if fliterErr != nil {
 		return nil, errTxLogParse
 	}
-	log.Info("getSwapTxReceipt", "event:", event)
 	return event, nil
 }

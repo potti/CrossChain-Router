@@ -1,6 +1,8 @@
 package near
 
 import (
+	"fmt"
+
 	"github.com/anyswap/CrossChain-Router/v3/log"
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
 	"github.com/anyswap/CrossChain-Router/v3/tokens/base"
@@ -85,7 +87,8 @@ func (b *Bridge) GetTransactionByHash(txHash string) (result *TransactionResult,
 		if err == nil {
 			return result, nil
 		} else {
-			log.Info("GetTransactionByHash", "GetTransactionByHash", txHash, "url", url, "router", router, "err", err)
+			fmt.Printf("=========%+v", err)
+			log.Info("GetTransactionByHash", "txHash", txHash, "url", url, "router", router, "err", err)
 		}
 	}
 	return nil, tokens.ErrTxNotFound

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/anyswap/CrossChain-Router/v3/log"
 	"github.com/anyswap/CrossChain-Router/v3/rpc/client"
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
 )
@@ -63,10 +64,11 @@ func GetLatestBlockNumber(url string) (uint64, error) {
 }
 
 // GetTransactionByHash get tx by hash
-func GetTransactionByHash(url, txHash, sendId string) (*TransactionResult, error) {
+func GetTransactionByHash(url, txHash, senderId string) (*TransactionResult, error) {
+	log.Info("GetTransactionByHash", "url", url, "txHash", txHash, "senderId", senderId)
 	request := &client.Request{}
 	request.Method = "tx"
-	request.Params = []string{txHash, sendId}
+	request.Params = []string{txHash, senderId}
 	request.ID = int(time.Now().UnixNano())
 	request.Timeout = rpcTimeout
 	var result TransactionResult

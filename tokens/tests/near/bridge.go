@@ -7,7 +7,7 @@ package near
 
 import (
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
-	ethpro "github.com/anyswap/CrossChain-Router/v3/tokens/near"
+	nearPro "github.com/anyswap/CrossChain-Router/v3/tokens/near"
 )
 
 var (
@@ -17,13 +17,13 @@ var (
 
 // Bridge bridge impl struct
 type Bridge struct {
-	*ethpro.Bridge
+	*nearPro.Bridge
 }
 
 // NewCrossChainBridge new bridge instance
 func NewCrossChainBridge() *Bridge {
 	return &Bridge{
-		Bridge: ethpro.NewCrossChainBridge(),
+		Bridge: nearPro.NewCrossChainBridge(),
 	}
 }
 
