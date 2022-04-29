@@ -72,3 +72,8 @@ func StringToPublicKey(pub string) ed25519.PublicKey {
 	pubKey := base58.Decode(strings.TrimPrefix(pub, ed25519Prefix))
 	return ed25519.PublicKey(pubKey)
 }
+
+func StringToPrivateKey(priv string) ed25519.PrivateKey {
+	privateKey := base58.Decode(strings.TrimPrefix(priv, ed25519Prefix))
+	return ed25519.PrivateKey(privateKey)
+}

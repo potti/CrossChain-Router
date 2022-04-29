@@ -11,8 +11,8 @@ Module = "near"
 Port = 11556
 
 # use private key instead of mpc signing
-SignWithPrivateKey = "0x1111111111111111111111111111111111111111111111111111111111111111"
-SignerAddress = "r1.crossdemo.testnet"
+SignWithPrivateKey = "ed25519:"
+SignerAddress = "userdemo.testnet"
 
 # allow call into router from contract
 AllowCallByContract = false
@@ -23,34 +23,30 @@ IsDebugMode = true
 # all chain ids (pass 'miss token config' checking)
 AllChainIDs = ["123", "1337"]
 
-
 [Gateway]
 APIAddress = ["https://archival-rpc.testnet.near.org"]
 
-
 # chain config
 [Chain]
-ChainID = "123"
 BlockChain = "near"
+ChainID = "123"
+Confirmations = 1
+InitialHeight = 0
 RouterContract = "r1.crossdemo.testnet"
-Confirmations  = 1
-InitialHeight  = 0
-
 
 # token config
 [Token]
-TokenID         = "anyBNB"
-Decimals        = 18
-ContractVersion = 6
 ContractAddress = "demotoken.crossdemo.testnet"
-Underlying      = "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"
-RouterContract  = "r1.crossdemo.testnet"
-
+ContractVersion = 6
+Decimals = 18
+RouterContract = "r1.crossdemo.testnet"
+TokenID = "anyBNB"
+Underlying = "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"
 
 [Swap]
-SwapFeeRatePerMillion = 0
-MaximumSwapFee    = "0"
-MinimumSwapFee    = "0"
-MaximumSwap       = "10000000000000000000000000"
 BigValueThreshold = "10000000000000000000000000"
-MinimumSwap       = "1"
+MaximumSwap = "10000000000000000000000000"
+MaximumSwapFee = "0"
+MinimumSwap = "1"
+MinimumSwapFee = "0"
+SwapFeeRatePerMillion = 0

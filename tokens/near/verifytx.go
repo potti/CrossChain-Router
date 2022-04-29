@@ -23,7 +23,6 @@ func (b *Bridge) VerifyMsgHash(rawTx interface{}, msgHashes []string) (err error
 
 // VerifyTransaction impl
 func (b *Bridge) VerifyTransaction(txHash string, args *tokens.VerifyArgs) (*tokens.SwapTxInfo, error) {
-	log.Info("VerifyTransaction", "txHash", txHash, "args", args)
 	swapType := args.SwapType
 	logIndex := args.LogIndex
 	allowUnstable := args.AllowUnstable
@@ -133,8 +132,6 @@ func (b *Bridge) checkTxStatus(txres *TransactionResult, allowUnstable bool) err
 }
 
 func (b *Bridge) parseNep141SwapoutTxEvent(swapInfo *tokens.SwapTxInfo, event []string) error {
-
-	log.Info("parseNep141SwapoutTxEvent", "log", event)
 	swapInfo.ERC20SwapInfo.Token = event[2]
 	swapInfo.From = event[4]
 	swapInfo.Bind = event[6]
@@ -150,8 +147,6 @@ func (b *Bridge) parseNep141SwapoutTxEvent(swapInfo *tokens.SwapTxInfo, event []
 		return errt
 	}
 	swapInfo.ToChainID = toChainID
-
-	log.Info("ERC20SwapInfo", "ERC20SwapInfo", swapInfo.ERC20SwapInfo)
 
 	tokenCfg := b.GetTokenConfig(swapInfo.ERC20SwapInfo.Token)
 	if tokenCfg == nil {

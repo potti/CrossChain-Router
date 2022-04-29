@@ -19,14 +19,13 @@ import (
 // MPCSignTransaction mpc sign raw tx
 func (b *Bridge) MPCSignTransaction(rawTx interface{}, args *tokens.BuildTxArgs) (signedTx interface{}, txHash string, err error) {
 	log.Debug("Near MPCSignTransaction")
-	tx, err := b.verifyTransactionReceiver(rawTx, args.GetTokenID())
+	err = b.verifyTransactionReceiver(rawTx, args.GetTokenID())
 	if err != nil {
 		return nil, "", err
 	}
-	fmt.Println("tx========", tx)
 	if params.SignWithPrivateKey() {
 		privKey := params.GetSignerPrivateKey(b.ChainConfig.ChainID)
-		signedTx, txHash, err = b.SignTransactionWithPrivateKey(rawTx, ed25519.PrivateKey(privKey))
+		signedTx, txHash, err = b.SignTransactionWithPrivateKey(rawTx, StringToPrivateKey(privKey))
 		return
 	}
 	return
@@ -35,26 +34,26 @@ func (b *Bridge) MPCSignTransaction(rawTx interface{}, args *tokens.BuildTxArgs)
 // SignTransactionWithPrivateKey sign tx with ECDSA private key
 func (b *Bridge) SignTransactionWithPrivateKey(rawTx interface{}, privKey ed25519.PrivateKey) (signedTx interface{}, txHash string, err error) {
 	tx := rawTx.(*RawTransaction)
-	signedTx, txHash, err = signTransaction(tx, ed25519.PrivateKey(privKey), b.ChainConfig.RouterContract)
+	signedTx, txHash, err = signTransaction(tx, privKey)
 	return
 }
 
-func (b *Bridge) verifyTransactionReceiver(rawTx interface{}, tokenID string) (*RawTransaction, error) {
+func (b *Bridge) verifyTransactionReceiver(rawTx interface{}, tokenID string) error {
 	tx, ok := rawTx.(*RawTransaction)
 	if !ok {
-		return nil, errors.New("[sign] wrong raw tx param")
+		return errors.New("[sign] wrong raw tx param")
 	}
 	checkReceiver, err := router.GetTokenRouterContract(tokenID, b.ChainConfig.ChainID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if !strings.EqualFold(tx.ReceiverID, checkReceiver) {
-		return nil, fmt.Errorf("[sign] tx receiver mismatch. have %v want %v", tx.ReceiverID, checkReceiver)
+		return fmt.Errorf("[sign] tx receiver mismatch. have %v want %v", tx.ReceiverID, checkReceiver)
 	}
-	return tx, nil
+	return nil
 }
 
-func signTransaction(tx *RawTransaction, privKey ed25519.PrivateKey, accountId string) (signedTx *SignedTransaction, txHash string, err error) {
+func signTransaction(tx *RawTransaction, privKey ed25519.PrivateKey) (signedTx *SignedTransaction, txHash string, err error) {
 	buf, err := borsh.Serialize(*tx)
 	if err != nil {
 		return nil, "", err

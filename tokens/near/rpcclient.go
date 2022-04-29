@@ -65,7 +65,6 @@ func GetLatestBlockNumber(url string) (uint64, error) {
 
 // GetTransactionByHash get tx by hash
 func GetTransactionByHash(url, txHash, senderId string) (*TransactionResult, error) {
-	log.Info("GetTransactionByHash", "url", url, "txHash", txHash, "senderId", senderId)
 	request := &client.Request{}
 	request.Method = "tx"
 	request.Params = []string{txHash, senderId}
@@ -74,6 +73,7 @@ func GetTransactionByHash(url, txHash, senderId string) (*TransactionResult, err
 	var result TransactionResult
 	err := client.RPCPostRequest(url, request, &result)
 	if err != nil {
+		log.Info("GetTransactionByHash", "err", err, "txHash", txHash)
 		return nil, err
 	}
 	if !strings.EqualFold(result.Transaction.Hash, txHash) {
@@ -101,6 +101,7 @@ func GetAccountNonce(url, account, publicKey string) (uint64, error) {
 }
 
 func BroadcastTxCommit(url string, signedTx []byte) (string, error) {
+	log.Info("BroadcastTxCommit", "url", url, "signedTx", base64.StdEncoding.EncodeToString(signedTx))
 	request := &client.Request{}
 	request.Method = "broadcast_tx_commit"
 	request.Params = []string{base64.StdEncoding.EncodeToString(signedTx)}

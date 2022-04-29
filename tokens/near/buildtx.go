@@ -1,7 +1,9 @@
 package near
 
 import (
+	"encoding/json"
 	"fmt"
+	"math/big"
 
 	"github.com/anyswap/CrossChain-Router/v3/common"
 	"github.com/anyswap/CrossChain-Router/v3/log"
@@ -13,8 +15,6 @@ import (
 
 // BuildRawTransaction build raw tx
 func (b *Bridge) BuildRawTransaction(args *tokens.BuildTxArgs) (rawTx interface{}, err error) {
-	log.Info("BuildRawTransaction", "args.From", args.From, "args.To", args.To, "args.ToChainID", args.ToChainID.String(),
-		"tokenId", args.GetTokenID(), "SwapType", args.SwapType, "ERC20SwapInfo", args.ERC20SwapInfo)
 	if !params.IsTestMode && args.ToChainID.String() != b.ChainConfig.ChainID {
 		return nil, tokens.ErrToChainIDMismatch
 	}
@@ -58,6 +58,7 @@ func (b *Bridge) BuildRawTransaction(args *tokens.BuildTxArgs) (rawTx interface{
 	}
 
 	nonce, getNonceErr := b.GetAccountNonce(args.From, mpcPubkey)
+	nonce++
 	if getNonceErr != nil {
 		return nil, getNonceErr
 	}
@@ -67,17 +68,8 @@ func (b *Bridge) BuildRawTransaction(args *tokens.BuildTxArgs) (rawTx interface{
 		return nil, getBlockHashErr
 	}
 
-	rawTx = createTransaction(args.From, PublicKeyFromEd25519(StringToPublicKey(mpcPubkey)), args.Bind, nonce, base58.Decode(blockHash), []Action{
-		{
-			Enum: 0,
-			FunctionCall: FunctionCall{
-				MethodName: "any_swap_in",
-				Args:       []byte{},
-				Gas:        300_000_000_000_000,
-				Deposit:    "0",
-			},
-		},
-	})
+	actions := createFunctionCall(args.SwapID, multichainToken, args.Bind, args.OriginValue.String(), args.FromChainID.String())
+	rawTx = createTransaction(args.From, PublicKeyFromEd25519(StringToPublicKey(mpcPubkey)), b.ChainConfig.RouterContract, nonce, base58.Decode(blockHash), actions)
 	return
 }
 
@@ -126,4 +118,25 @@ func createTransaction(
 	copy(tx.BlockHash[:], blockHash)
 	tx.Actions = actions
 	return &tx
+}
+
+func createFunctionCall(txHash, token, to, amount, from_chain_id string) []Action {
+	log.Info("createFunctionCall", "txHash", txHash, "token", token, "to", to, "amount", amount, "from_chain_id", from_chain_id)
+	callArgs := &AnySwapIn{
+		Tx:            txHash,
+		Token:         token,
+		To:            to,
+		Amount:        amount,
+		From_chain_id: from_chain_id,
+	}
+	argsBytes, _ := json.Marshal(callArgs)
+	return []Action{{
+		Enum: 2,
+		FunctionCall: FunctionCall{
+			MethodName: "any_swap_in",
+			Args:       argsBytes,
+			Gas:        300_000_000_000_000,
+			Deposit:    *big.NewInt(0),
+		},
+	}}
 }

@@ -1,6 +1,8 @@
 package near
 
 import (
+	"math/big"
+
 	"github.com/near/borsh-go"
 )
 
@@ -28,13 +30,13 @@ type Status struct {
 }
 
 type Transaction struct {
-	Actions    []Action `json:"actions"`
-	Hash       string   `json:"hash"`
-	Nonce      uint64   `json:"nonce"`
-	PublicKey  string   `json:"public_key"`
-	ReceiverID string   `json:"receiver_id"`
-	Signature  string   `json:"signature"`
-	SignerID   string   `json:"signer_id"`
+	// Actions    []Action `json:"actions"`
+	Hash       string `json:"hash"`
+	Nonce      uint64 `json:"nonce"`
+	PublicKey  string `json:"public_key"`
+	ReceiverID string `json:"receiver_id"`
+	Signature  string `json:"signature"`
+	SignerID   string `json:"signer_id"`
 }
 
 type TransactionOutcome struct {
@@ -65,22 +67,76 @@ type Proof struct {
 	Hash      string `json:"hash"`
 }
 
-// Action simulates an enum for Borsh encoding.
 type Action struct {
-	Enum         borsh.Enum `borsh_enum:"true"` // treat struct as complex enum when serializing/deserializing
-	FunctionCall FunctionCall
-	Transfer     Transfer
+	Enum           borsh.Enum `borsh_enum:"true"` // treat struct as complex enum when serializing/deserializing
+	CreateAccount  borsh.Enum
+	DeployContract DeployContract
+	FunctionCall   FunctionCall
+	Transfer       Transfer
+	Stake          Stake
+	AddKey         AddKey
+	DeleteKey      DeleteKey
+	DeleteAccount  DeleteAccount
 }
 
-type Transfer struct {
-	Deposit string
+// The DeployContract action.
+type DeployContract struct {
+	Code []byte
 }
 
+// The FunctionCall action.
 type FunctionCall struct {
 	MethodName string
 	Args       []byte
 	Gas        uint64
-	Deposit    string
+	Deposit    big.Int // u128
+}
+
+// The Stake action.
+type Stake struct {
+	Stake     big.Int // u128
+	PublicKey PublicKey
+}
+
+// The AddKey action.
+type AddKey struct {
+	PublicKey PublicKey
+	AccessKey AccessKey
+}
+
+// AccessKey encodes a NEAR access key.
+type AccessKey struct {
+	Nonce      uint64
+	Permission AccessKeyPermission
+}
+
+// AccessKeyPermission encodes a NEAR access key permission.
+type AccessKeyPermission struct {
+	Enum         borsh.Enum `borsh_enum:"true"` // treat struct as complex enum when serializing/deserializing
+	FunctionCall FunctionCallPermission
+	FullAccess   borsh.Enum
+}
+
+// FunctionCallPermission encodes a NEAR function call permission (an access
+// key permission).
+type FunctionCallPermission struct {
+	Allowance   *big.Int
+	ReceiverId  string
+	MethodNames []string
+}
+
+// The DeleteAccount action.
+type DeleteAccount struct {
+	BeneficiaryID string
+}
+
+// The DeleteKey action.
+type DeleteKey struct {
+	PublicKey PublicKey
+}
+
+type Transfer struct {
+	Deposit big.Int
 }
 
 // A Transaction encodes a NEAR transaction.
@@ -108,4 +164,12 @@ type SignedTransaction struct {
 type Signature struct {
 	KeyType uint8
 	Data    [64]byte
+}
+
+type AnySwapIn struct {
+	Tx            string `json:"tx"`
+	Token         string `json:"token"`
+	To            string `json:"to"`
+	Amount        string `json:"amount"`
+	From_chain_id string `json:"from_chain_id"`
 }
