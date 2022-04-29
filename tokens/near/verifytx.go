@@ -1,13 +1,17 @@
 package near
 
 import (
+	"crypto/sha256"
 	"errors"
 	"strings"
 
 	"github.com/anyswap/CrossChain-Router/v3/common"
 	"github.com/anyswap/CrossChain-Router/v3/log"
+	"github.com/anyswap/CrossChain-Router/v3/params"
 	"github.com/anyswap/CrossChain-Router/v3/router"
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
+	"github.com/btcsuite/btcutil/base58"
+	"github.com/near/borsh-go"
 )
 
 var (
@@ -18,6 +22,28 @@ var (
 
 // VerifyMsgHash verify msg hash
 func (b *Bridge) VerifyMsgHash(rawTx interface{}, msgHashes []string) (err error) {
+	txb, ok := rawTx.(*RawTransaction)
+	if !ok {
+		return tokens.ErrWrongRawTx
+	}
+	buf, errb := borsh.Serialize(*txb)
+	if errb != nil {
+		return errb
+	}
+
+	hash := sha256.Sum256(buf)
+
+	if len(msgHashes) < 1 {
+		return tokens.ErrWrongCountOfMsgHashes
+	}
+	msgHash := msgHashes[0]
+	sigHash := base58.Encode(hash[:])
+
+	if !strings.EqualFold(sigHash, msgHash) {
+		logFunc := log.GetPrintFuncOr(params.IsDebugMode, log.Info, log.Trace)
+		logFunc("message hash mismatch", "want", msgHash, "have", sigHash)
+		return tokens.ErrMsgHashMismatch
+	}
 	return nil
 }
 

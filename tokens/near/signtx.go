@@ -60,7 +60,6 @@ func signTransaction(tx *RawTransaction, privKey ed25519.PrivateKey) (signedTx *
 	}
 
 	hash := sha256.Sum256(buf)
-
 	sig, err := privKey.Sign(rand.Reader, hash[:], crypto.Hash(0))
 	if err != nil {
 		return nil, "", err

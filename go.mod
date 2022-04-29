@@ -3,6 +3,7 @@ module github.com/anyswap/CrossChain-Router/v3
 go 1.15
 
 require (
+	filippo.io/edwards25519 v1.0.0-rc.1 // indirect
 	github.com/BurntSushi/toml v0.4.1
 	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce

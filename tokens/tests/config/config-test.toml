@@ -11,7 +11,7 @@ Module = "near"
 Port = 11556
 
 # use private key instead of mpc signing
-SignWithPrivateKey = "ed25519:"
+SignWithPrivateKey = "ed25519:2eFH8pYc9xLiDvaqCL62XLXSQZNxD7uoGoq31mG1zQfE7DbV9gSXKG3qhxpgwWoii75T4MKqHKvy7B51VAsaAjpu"
 SignerAddress = "userdemo.testnet"
 
 # allow call into router from contract
