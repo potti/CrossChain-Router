@@ -5,30 +5,87 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/anyswap/CrossChain-Router/v3/common"
 	"github.com/anyswap/CrossChain-Router/v3/log"
+	"github.com/anyswap/CrossChain-Router/v3/mpc"
 	"github.com/anyswap/CrossChain-Router/v3/params"
 	"github.com/anyswap/CrossChain-Router/v3/router"
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
+	"github.com/btcsuite/btcutil/base58"
 	"github.com/near/borsh-go"
 )
 
 // MPCSignTransaction mpc sign raw tx
 func (b *Bridge) MPCSignTransaction(rawTx interface{}, args *tokens.BuildTxArgs) (signedTx interface{}, txHash string, err error) {
-	log.Debug("Near MPCSignTransaction")
-	err = b.verifyTransactionReceiver(rawTx, args.GetTokenID())
+	tx, ok := rawTx.(*RawTransaction)
+	if !ok {
+		return nil, "", tokens.ErrWrongRawTx
+	}
+
+	err = b.verifyTransactionReceiver(tx, args.GetTokenID())
 	if err != nil {
 		return nil, "", err
 	}
+
 	if params.SignWithPrivateKey() {
 		privKey := params.GetSignerPrivateKey(b.ChainConfig.ChainID)
-		signedTx, txHash, err = b.SignTransactionWithPrivateKey(rawTx, StringToPrivateKey(privKey))
-		return
+		return b.SignTransactionWithPrivateKey(rawTx, StringToPrivateKey(privKey))
 	}
-	return
+
+	mpcPubkey := router.GetMPCPublicKey(args.From)
+	if mpcPubkey == "" {
+		return nil, "", tokens.ErrMissMPCPublicKey
+	}
+
+	buf, err := borsh.Serialize(*tx)
+	if err != nil {
+		return nil, "", err
+	}
+	hash := sha256.Sum256(buf)
+
+	jsondata, _ := json.Marshal(args.GetExtraArgs())
+	msgContext := string(jsondata)
+
+	txid := args.SwapID
+	logPrefix := b.ChainConfig.BlockChain + " MPCSignTransaction "
+	log.Info(logPrefix+"start", "txid", txid)
+
+	keyID, rsvs, err := mpc.DoSignOneED(mpcPubkey, common.ToHex(buf), msgContext)
+	if err != nil {
+		return nil, "", err
+	}
+
+	if len(rsvs) != 1 {
+		log.Warn("get sign status require one rsv but return many",
+			"rsvs", len(rsvs), "keyID", keyID, "txid", txid)
+		return nil, "", errors.New("get sign status require one rsv but return many")
+	}
+
+	rsv := rsvs[0]
+	log.Trace(logPrefix+"get rsv signature success", "keyID", keyID, "txid", txid, "rsv", rsv)
+	sig := common.FromHex(rsv)
+	if len(sig) != ed25519.SignatureSize {
+		log.Error("wrong signature length", "keyID", keyID, "txid", txid, "have", len(sig), "want", ed25519.SignatureSize)
+		return nil, "", errors.New("wrong signature length")
+	}
+
+	var signature Signature
+	signature.KeyType = ED25519
+	copy(signature.Data[:], sig[:])
+
+	var stx SignedTransaction
+	stx.Transaction = *tx
+	stx.Signature = signature
+
+	txHash = base58.Encode(hash[:])
+
+	log.Info(logPrefix+"success", "keyID", keyID, "txid", txid, "txhash", txHash)
+	return &stx, txHash, nil
 }
 
 // SignTransactionWithPrivateKey sign tx with ECDSA private key
@@ -38,11 +95,7 @@ func (b *Bridge) SignTransactionWithPrivateKey(rawTx interface{}, privKey ed2551
 	return
 }
 
-func (b *Bridge) verifyTransactionReceiver(rawTx interface{}, tokenID string) error {
-	tx, ok := rawTx.(*RawTransaction)
-	if !ok {
-		return errors.New("[sign] wrong raw tx param")
-	}
+func (b *Bridge) verifyTransactionReceiver(tx *RawTransaction, tokenID string) error {
 	checkReceiver, err := router.GetTokenRouterContract(tokenID, b.ChainConfig.ChainID)
 	if err != nil {
 		return err
@@ -73,5 +126,9 @@ func signTransaction(tx *RawTransaction, privKey ed25519.PrivateKey) (signedTx *
 	stx.Transaction = *tx
 	stx.Signature = signature
 
-	return &stx, string(hash[:]), nil
+	txHash = base58.Encode(hash[:])
+
+	log.Info("sign tx success", "txhash", txHash)
+
+	return &stx, txHash, nil
 }
