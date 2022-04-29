@@ -28,8 +28,8 @@ func NewCrossChainBridge() *Bridge {
 }
 
 // InitAfterConfig init variables (ie. extra members) after loading config
-func (b *Bridge) InitAfterConfig() {
-	b.Bridge.InitAfterConfig()
+func (b *Bridge) InitAfterConfig(isReload bool) {
+	b.Bridge.InitAfterConfig(isReload)
 }
 
 // RegisterSwap register swap.

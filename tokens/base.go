@@ -22,6 +22,7 @@ func IsNativeCoin(name string) bool {
 }
 
 // InitRouterSwapType init router swap type
+//nolint:goconst // allow dupl constant string
 func InitRouterSwapType(swapTypeStr string) {
 	switch strings.ToLower(swapTypeStr) {
 	case "erc20swap":
@@ -71,7 +72,7 @@ func NewCrossChainBridgeBase() *CrossChainBridgeBase {
 }
 
 // InitAfterConfig init variables (ie. extra members) after loading config
-func (b *CrossChainBridgeBase) InitAfterConfig() {
+func (b *CrossChainBridgeBase) InitAfterConfig(isReload bool) {
 }
 
 // GetBalance get balance is used for checking budgets to prevent DOS attacking
