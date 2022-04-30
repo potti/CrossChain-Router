@@ -1,6 +1,7 @@
 package near
 
 import (
+	"github.com/anyswap/CrossChain-Router/v3/params"
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
 	"github.com/near/borsh-go"
 )
@@ -12,16 +13,29 @@ func (b *Bridge) SendTransaction(signedTx interface{}) (txHash string, err error
 	if err != nil {
 		return "", err
 	}
-	return b.BroadcastTxCommit(buf)
+	txHash, err = b.BroadcastTxCommit(buf)
+	if err != nil {
+		return "", err
+	} else if !params.IsParallelSwapEnabled() {
+		sender := signTx.Transaction.SignerID
+		nonce := signTx.Transaction.Nonce
+		b.SetNonce(sender, nonce+1)
+	}
+	return txHash, nil
 }
 
-func (b *Bridge) BroadcastTxCommit(signedTx []byte) (string, error) {
-	urls := b.GatewayConfig.APIAddress
+// BroadcastTxCommit broadcast tx
+func (b *Bridge) BroadcastTxCommit(signedTx []byte) (result string, err error) {
+	urls := append(b.GatewayConfig.APIAddress, b.GatewayConfig.APIAddressExt...)
+	var success bool
 	for _, url := range urls {
-		result, err := BroadcastTxCommit(url, signedTx)
+		result, err = BroadcastTxCommit(url, signedTx)
 		if err == nil {
-			return result, nil
+			success = true
 		}
+	}
+	if success {
+		return result, nil
 	}
 	return "", tokens.ErrRPCQueryError
 }

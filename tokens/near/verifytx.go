@@ -130,7 +130,6 @@ func fliterEvent(logs []string) ([]string, error) {
 }
 
 func (b *Bridge) checkTxStatus(txres *TransactionResult, allowUnstable bool) error {
-
 	if txres.Status.Failure != nil {
 		return tokens.ErrTxIsNotValidated
 	}

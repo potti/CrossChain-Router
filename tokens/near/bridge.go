@@ -13,7 +13,7 @@ var (
 	_ tokens.NonceSetter = &Bridge{}
 )
 
-// Bridge block bridge inherit from btc bridge
+// Bridge near bridge
 type Bridge struct {
 	*base.NonceSetterBase
 }
@@ -31,7 +31,6 @@ func (b *Bridge) VerifyTokenConfig(tokenCfg *tokens.TokenConfig) error {
 }
 
 // GetLatestBlockNumber gets latest block number
-// For ripple, GetLatestBlockNumber returns current ledger version
 func (b *Bridge) GetLatestBlockNumber() (uint64, error) {
 	urls := b.GatewayConfig.APIAddress
 	for _, url := range urls {
@@ -44,7 +43,7 @@ func (b *Bridge) GetLatestBlockNumber() (uint64, error) {
 }
 
 func (b *Bridge) GetLatestBlockHash() (string, error) {
-	urls := b.GatewayConfig.APIAddress
+	urls := append(b.GatewayConfig.APIAddress, b.GatewayConfig.APIAddressExt...)
 	for _, url := range urls {
 		result, err := GetLatestBlockHash(url)
 		if err == nil {
@@ -55,13 +54,12 @@ func (b *Bridge) GetLatestBlockHash() (string, error) {
 }
 
 //GetLatestBlockNumberOf gets latest block number from single api
-// For ripple, GetLatestBlockNumberOf returns current ledger version
 func (b *Bridge) GetLatestBlockNumberOf(apiAddress string) (uint64, error) {
 	return GetLatestBlockNumber(apiAddress)
 }
 
 func (b *Bridge) GetBlockNumberByHash(txhash string) (uint64, error) {
-	urls := b.GatewayConfig.APIAddress
+	urls := append(b.GatewayConfig.APIAddress, b.GatewayConfig.APIAddressExt...)
 	for _, url := range urls {
 		result, err := GetBlockNumberByHash(url, txhash)
 		if err == nil {
@@ -78,7 +76,7 @@ func (b *Bridge) GetTransaction(txHash string) (tx interface{}, err error) {
 
 // GetTransactionByHash get tx response by hash
 func (b *Bridge) GetTransactionByHash(txHash string) (result *TransactionResult, err error) {
-	urls := b.GatewayConfig.APIAddress
+	urls := append(b.GatewayConfig.APIAddress, b.GatewayConfig.APIAddressExt...)
 	router := b.ChainConfig.RouterContract
 	for _, url := range urls {
 		result, err = GetTransactionByHash(url, txHash, router)

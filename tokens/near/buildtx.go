@@ -2,8 +2,10 @@ package near
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/anyswap/CrossChain-Router/v3/common"
 	"github.com/anyswap/CrossChain-Router/v3/log"
@@ -11,6 +13,15 @@ import (
 	"github.com/anyswap/CrossChain-Router/v3/router"
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
 	"github.com/btcsuite/btcutil/base58"
+)
+
+const (
+	defaultGasLimit uint64 = 300_000_000_000_000
+)
+
+var (
+	retryRPCCount    = 3
+	retryRPCInterval = 1 * time.Second
 )
 
 // BuildRawTransaction build raw tx
@@ -57,10 +68,14 @@ func (b *Bridge) BuildRawTransaction(args *tokens.BuildTxArgs) (rawTx interface{
 		return nil, tokens.ErrMissTokenConfig
 	}
 
-	nonce, getNonceErr := b.GetAccountNonce(args.From, mpcPubkey)
-	nonce++
-	if getNonceErr != nil {
-		return nil, getNonceErr
+	extra, err := b.initExtra(args, token)
+	if err != nil {
+		return nil, err
+	}
+
+	receiver, amount, err := b.getReceiverAndAmount(args, multichainToken)
+	if err != nil {
+		return nil, err
 	}
 
 	blockHash, getBlockHashErr := b.GetLatestBlockHash()
@@ -68,9 +83,53 @@ func (b *Bridge) BuildRawTransaction(args *tokens.BuildTxArgs) (rawTx interface{
 		return nil, getBlockHashErr
 	}
 
-	actions := createFunctionCall(args.SwapID, multichainToken, args.Bind, args.OriginValue.String(), args.FromChainID.String())
-	rawTx = createTransaction(args.From, PublicKeyFromEd25519(StringToPublicKey(mpcPubkey)), b.ChainConfig.RouterContract, nonce, base58.Decode(blockHash), actions)
-	return
+	actions := createFunctionCall(args.SwapID, multichainToken, receiver, amount.String(), args.FromChainID.String(), *extra.Gas)
+	routerContract := b.GetRouterContract(multichainToken)
+	rawTx = createTransaction(args.From, PublicKeyFromEd25519(StringToPublicKey(mpcPubkey)), routerContract, *extra.Sequence, base58.Decode(blockHash), actions)
+	return rawTx, nil
+}
+
+func (b *Bridge) initExtra(args *tokens.BuildTxArgs, tokenCfg *tokens.TokenConfig) (extra *tokens.AllExtras, err error) {
+	extra = args.Extra
+	if extra == nil {
+		extra = &tokens.AllExtras{}
+		args.Extra = extra
+	}
+	if extra.Sequence == nil {
+		extra.Sequence, err = b.GetSeq(args)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if extra.Gas == nil {
+		gas := defaultGasLimit
+		extra.Gas = &gas
+	}
+	return extra, nil
+}
+
+func (b *Bridge) getReceiverAndAmount(args *tokens.BuildTxArgs, multichainToken string) (receiver string, amount *big.Int, err error) {
+	erc20SwapInfo := args.ERC20SwapInfo
+	receiver = args.Bind
+	if !b.IsValidAddress(receiver) {
+		log.Warn("swapout to wrong receiver", "receiver", args.Bind)
+		return receiver, amount, errors.New("swapout to invalid receiver")
+	}
+	fromBridge := router.GetBridgeByChainID(args.FromChainID.String())
+	if fromBridge == nil {
+		return receiver, amount, tokens.ErrNoBridgeForChainID
+	}
+	fromTokenCfg := fromBridge.GetTokenConfig(erc20SwapInfo.Token)
+	if fromTokenCfg == nil {
+		log.Warn("get token config failed", "chainID", args.FromChainID, "token", erc20SwapInfo.Token)
+		return receiver, amount, tokens.ErrMissTokenConfig
+	}
+	toTokenCfg := b.GetTokenConfig(multichainToken)
+	if toTokenCfg == nil {
+		return receiver, amount, tokens.ErrMissTokenConfig
+	}
+	amount = tokens.CalcSwapValue(erc20SwapInfo.TokenID, b.ChainConfig.ChainID, args.OriginValue, fromTokenCfg.Decimals, toTokenCfg.Decimals, args.OriginFrom, args.OriginTxTo)
+	return receiver, amount, err
 }
 
 // GetTxBlockInfo impl NonceSetter interface
@@ -84,21 +143,35 @@ func (b *Bridge) GetTxBlockInfo(txHash string) (blockHeight, blockTime uint64) {
 
 // GetPoolNonce impl NonceSetter interface
 func (b *Bridge) GetPoolNonce(address, _height string) (uint64, error) {
-	return uint64(0), nil
+	mpcPubkey := router.GetMPCPublicKey(address)
+	return b.GetAccountNonce(address, mpcPubkey)
 }
 
 // GetSeq returns account tx sequence
-func (b *Bridge) GetSeq(args *tokens.BuildTxArgs) (nonceptr *uint32, err error) {
-	nonceVal, err := b.GetPoolNonce(args.From, "")
+func (b *Bridge) GetSeq(args *tokens.BuildTxArgs) (nonceptr *uint64, err error) {
+	var nonce uint64
+
+	if params.IsParallelSwapEnabled() {
+		nonce, err = b.AllocateNonce(args)
+		return &nonce, err
+	}
+
+	if params.IsAutoSwapNonceEnabled(b.ChainConfig.ChainID) { // increase automatically
+		nonce = b.GetSwapNonce(args.From)
+		return &nonce, nil
+	}
+
+	for i := 0; i < retryRPCCount; i++ {
+		nonce, err = b.GetPoolNonce(args.From, "pending")
+		if err == nil {
+			break
+		}
+		time.Sleep(retryRPCInterval)
+	}
 	if err != nil {
 		return nil, err
 	}
-	if args == nil {
-		nonce := uint32(nonceVal)
-		return &nonce, nil
-	}
-	nonceVal = b.AdjustNonce(args.From, nonceVal)
-	nonce := uint32(nonceVal)
+	nonce = b.AdjustNonce(args.From, nonce)
 	return &nonce, nil
 }
 
@@ -120,7 +193,7 @@ func createTransaction(
 	return &tx
 }
 
-func createFunctionCall(txHash, token, to, amount, from_chain_id string) []Action {
+func createFunctionCall(txHash, token, to, amount, from_chain_id string, gas uint64) []Action {
 	log.Info("createFunctionCall", "txHash", txHash, "token", token, "to", to, "amount", amount, "from_chain_id", from_chain_id)
 	callArgs := &AnySwapIn{
 		Tx:            txHash,
@@ -135,7 +208,7 @@ func createFunctionCall(txHash, token, to, amount, from_chain_id string) []Actio
 		FunctionCall: FunctionCall{
 			MethodName: "any_swap_in",
 			Args:       argsBytes,
-			Gas:        300_000_000_000_000,
+			Gas:        gas,
 			Deposit:    *big.NewInt(0),
 		},
 	}}
