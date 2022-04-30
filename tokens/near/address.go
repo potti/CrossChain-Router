@@ -30,6 +30,12 @@ func (b *Bridge) GetAccountNonce(account, publicKey string) (uint64, error) {
 	}
 	return 0, tokens.ErrRPCQueryError
 }
+
+// PublicKeyToAddress public key to address
+func (b *Bridge) PublicKeyToAddress(pubKey string) (string, error) {
+	return "", tokens.ErrNotImplemented
+}
+
 func GenerateKey() ([]byte, []byte, error) {
 	pub, priv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
