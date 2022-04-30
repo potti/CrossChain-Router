@@ -83,3 +83,8 @@ func StringToPrivateKey(priv string) ed25519.PrivateKey {
 	privateKey := base58.Decode(strings.TrimPrefix(priv, ed25519Prefix))
 	return ed25519.PrivateKey(privateKey)
 }
+
+// VerifyMPCPubKey verify mpc address and public key is matching
+func VerifyMPCPubKey(mpcAddress, mpcPubkey string) error {
+	return tokens.ErrNotImplemented
+}
