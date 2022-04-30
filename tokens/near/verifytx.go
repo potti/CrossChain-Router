@@ -111,7 +111,8 @@ func (b *Bridge) verifySwapoutTx(txHash string, logIndex int, allowUnstable bool
 }
 
 func fliterReceipts(receipts []ReceiptsOutcome, routerAddr string) (logs []string) {
-	for _, receipt := range receipts {
+	for i := 0; i < len(receipts); i++ {
+		receipt := &receipts[i]
 		if receipt.Outcome.ExecutorID == routerAddr {
 			logs = append(logs, receipt.Outcome.Logs...)
 		}

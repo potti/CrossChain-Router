@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	defaultGasLimit uint64 = 300_000_000_000_000
+	defaultGasLimit uint64 = 300000000000000
 )
 
 var (
@@ -68,7 +68,7 @@ func (b *Bridge) BuildRawTransaction(args *tokens.BuildTxArgs) (rawTx interface{
 		return nil, tokens.ErrMissTokenConfig
 	}
 
-	extra, err := b.initExtra(args, token)
+	extra, err := b.initExtra(args)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (b *Bridge) BuildRawTransaction(args *tokens.BuildTxArgs) (rawTx interface{
 	return rawTx, nil
 }
 
-func (b *Bridge) initExtra(args *tokens.BuildTxArgs, tokenCfg *tokens.TokenConfig) (extra *tokens.AllExtras, err error) {
+func (b *Bridge) initExtra(args *tokens.BuildTxArgs) (extra *tokens.AllExtras, err error) {
 	extra = args.Extra
 	if extra == nil {
 		extra = &tokens.AllExtras{}
@@ -193,14 +193,14 @@ func createTransaction(
 	return &tx
 }
 
-func createFunctionCall(txHash, token, to, amount, from_chain_id string, gas uint64) []Action {
-	log.Info("createFunctionCall", "txHash", txHash, "token", token, "to", to, "amount", amount, "from_chain_id", from_chain_id)
+func createFunctionCall(txHash, token, to, amount, fromChainID string, gas uint64) []Action {
+	log.Info("createFunctionCall", "txHash", txHash, "token", token, "to", to, "amount", amount, "fromChainID", fromChainID)
 	callArgs := &AnySwapIn{
-		Tx:            txHash,
-		Token:         token,
-		To:            to,
-		Amount:        amount,
-		From_chain_id: from_chain_id,
+		Tx:          txHash,
+		Token:       token,
+		To:          to,
+		Amount:      amount,
+		FromChainID: fromChainID,
 	}
 	argsBytes, _ := json.Marshal(callArgs)
 	return []Action{{

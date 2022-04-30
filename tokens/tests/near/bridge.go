@@ -1,5 +1,5 @@
-// Package eth test eth router by implementing `tokens.IBridge` interface.
-// this testing implementation is using the product `token/eth` impl.
+// Package near test near router by implementing `tokens.IBridge` interface.
+// this testing implementation is using the product `token/near` impl.
 // this way implementation is just an example, in reality we need
 // impl the `tokens.IBridge` interface from scratch, and take it into
 // the product implementation after this testing is passed.

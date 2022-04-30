@@ -42,7 +42,6 @@ func (k *EcdsaPublic) Public(sequence *uint32) []byte {
 	}
 	b = append(b, format)
 	return paddedAppend(32, b, x.Bytes())
-
 }
 
 func isOdd(a *big.Int) bool {

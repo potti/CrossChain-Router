@@ -24,7 +24,7 @@ type BlockHeader struct {
 
 type Status struct {
 	SuccessValue     interface{} `json:"SuccessValue,omitempty"`
-	SuccessReceiptId interface{} `json:"SuccessReceiptId,omitempty"`
+	SuccessReceiptID interface{} `json:"SuccessReceiptId,omitempty"`
 	Failure          interface{} `json:"Failure,omitempty"`
 	Unknown          interface{} `json:"Unknown,omitempty"`
 }
@@ -121,7 +121,7 @@ type AccessKeyPermission struct {
 // key permission).
 type FunctionCallPermission struct {
 	Allowance   *big.Int
-	ReceiverId  string
+	ReceiverID  string
 	MethodNames []string
 }
 
@@ -167,9 +167,9 @@ type Signature struct {
 }
 
 type AnySwapIn struct {
-	Tx            string `json:"tx"`
-	Token         string `json:"token"`
-	To            string `json:"to"`
-	Amount        string `json:"amount"`
-	From_chain_id string `json:"from_chain_id"`
+	Tx          string `json:"tx"`
+	Token       string `json:"token"`
+	To          string `json:"to"`
+	Amount      string `json:"amount"`
+	FromChainID string `json:"from_chain_id"`
 }

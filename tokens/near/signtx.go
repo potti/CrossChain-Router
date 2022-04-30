@@ -76,7 +76,7 @@ func (b *Bridge) MPCSignTransaction(rawTx interface{}, args *tokens.BuildTxArgs)
 
 	var signature Signature
 	signature.KeyType = ED25519
-	copy(signature.Data[:], sig[:])
+	copy(signature.Data[:], sig)
 
 	var stx SignedTransaction
 	stx.Transaction = *tx

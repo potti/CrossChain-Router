@@ -9,7 +9,6 @@ const (
 	ED25519 = 0
 )
 
-
 // PublicKeyFromEd25519 derives a public key in NEAR encoding from pk.
 func PublicKeyFromEd25519(pk ed25519.PublicKey) PublicKey {
 	var pubKey PublicKey

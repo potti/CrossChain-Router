@@ -21,7 +21,6 @@ func (b *Bridge) RegisterSwap(txHash string, args *tokens.RegisterArgs) ([]*toke
 	}
 }
 
-// nolint:dupl // ok
 func (b *Bridge) registerERC20SwapTx(txHash string, logIndex int) ([]*tokens.SwapTxInfo, []error) {
 	log.Info("registerERC20SwapTx", "txhash:", txHash, "logIndex:", logIndex)
 	commonInfo := &tokens.SwapTxInfo{SwapInfo: tokens.SwapInfo{ERC20SwapInfo: &tokens.ERC20SwapInfo{}}}

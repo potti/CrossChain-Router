@@ -53,7 +53,7 @@ func (b *Bridge) GetLatestBlockHash() (string, error) {
 	return "", tokens.ErrRPCQueryError
 }
 
-//GetLatestBlockNumberOf gets latest block number from single api
+// GetLatestBlockNumberOf gets latest block number from single api
 func (b *Bridge) GetLatestBlockNumberOf(apiAddress string) (uint64, error) {
 	return GetLatestBlockNumber(apiAddress)
 }
@@ -119,5 +119,5 @@ func (b *Bridge) GetTransactionStatus(txHash string) (status *tokens.TxStatus, e
 	if latest, err := b.GetLatestBlockNumber(); err == nil && latest > blockHeight {
 		status.Confirmations = latest - blockHeight
 	}
-	return
+	return status, nil
 }

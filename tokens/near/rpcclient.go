@@ -15,6 +15,10 @@ var (
 	rpcTimeout = 60
 )
 
+const (
+	blockMethod = "block"
+)
+
 // SetRPCTimeout set rpc timeout
 func SetRPCTimeout(timeout int) {
 	rpcTimeout = timeout
@@ -22,7 +26,7 @@ func SetRPCTimeout(timeout int) {
 
 func GetBlockNumberByHash(url, hash string) (uint64, error) {
 	request := &client.Request{}
-	request.Method = "block"
+	request.Method = blockMethod
 	request.Params = map[string]string{"block_id": hash}
 	request.ID = int(time.Now().UnixNano())
 	request.Timeout = rpcTimeout
@@ -36,7 +40,7 @@ func GetBlockNumberByHash(url, hash string) (uint64, error) {
 
 func GetLatestBlockHash(url string) (string, error) {
 	request := &client.Request{}
-	request.Method = "block"
+	request.Method = blockMethod
 	request.Params = map[string]string{"finality": "final"}
 	request.ID = int(time.Now().UnixNano())
 	request.Timeout = rpcTimeout
@@ -51,7 +55,7 @@ func GetLatestBlockHash(url string) (string, error) {
 // GetLatestBlockNumber get latest block height
 func GetLatestBlockNumber(url string) (uint64, error) {
 	request := &client.Request{}
-	request.Method = "block"
+	request.Method = blockMethod
 	request.Params = map[string]string{"finality": "final"}
 	request.ID = int(time.Now().UnixNano())
 	request.Timeout = rpcTimeout
@@ -64,10 +68,10 @@ func GetLatestBlockNumber(url string) (uint64, error) {
 }
 
 // GetTransactionByHash get tx by hash
-func GetTransactionByHash(url, txHash, senderId string) (*TransactionResult, error) {
+func GetTransactionByHash(url, txHash, senderID string) (*TransactionResult, error) {
 	request := &client.Request{}
 	request.Method = "tx"
-	request.Params = []string{txHash, senderId}
+	request.Params = []string{txHash, senderID}
 	request.ID = int(time.Now().UnixNano())
 	request.Timeout = rpcTimeout
 	var result TransactionResult

@@ -36,7 +36,7 @@ func (b *Bridge) PublicKeyToAddress(pubKey string) (string, error) {
 	return "", tokens.ErrNotImplemented
 }
 
-func GenerateKey() ([]byte, []byte, error) {
+func GenerateKey() (seed, pub []byte, err error) {
 	pub, priv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		return nil, nil, err
