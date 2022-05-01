@@ -2,6 +2,7 @@ package near
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -117,4 +118,21 @@ func BroadcastTxCommit(url string, signedTx []byte) (string, error) {
 		return "", err
 	}
 	return result.Transaction.Hash, nil
+}
+
+func functionCall(url, accountId, methodName, args string) ([]byte, error) {
+	request := &client.Request{}
+	request.Method = "query"
+	request.Params = map[string]string{"request_type": "call_function", "finality": "final", "account_id": accountId, "method_name": methodName, "args_base64": args}
+	request.ID = int(time.Now().UnixNano())
+	request.Timeout = rpcTimeout
+	var result FunctionCallResult
+	err := client.RPCPostRequest(url, request, &result)
+	if err != nil {
+		return nil, err
+	}
+	if result.Result == nil {
+		return nil, errors.New(result.Error)
+	}
+	return result.Result, nil
 }

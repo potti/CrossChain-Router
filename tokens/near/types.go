@@ -173,3 +173,21 @@ type AnySwapIn struct {
 	Amount      string `json:"amount"`
 	FromChainID string `json:"from_chain_id"`
 }
+
+type FunctionCallResult struct {
+	BlockHash   string   `json:"block_hash"`
+	BlockHeight uint64   `json:"block_height"`
+	Logs        []string `json:"logs"`
+	Result      []byte   `json:"result"`
+	Error       string   `json:"error,omitempty"`
+}
+
+type FungibleTokenMetadata struct {
+	Spec           string `json:"spec"`
+	Name           string `json:"name"`
+	Symbol         string `json:"symbol"`
+	Icon           string `json:"icon"`
+	Reference      string `json:"reference"`
+	Reference_hash string `json:"reference_hash"`
+	Decimals       uint8  `json:"decimals"`
+}

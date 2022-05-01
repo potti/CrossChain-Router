@@ -42,6 +42,10 @@ var (
 	ErrNoEnoughReserveBudget = errors.New("no enough reserve budget")
 	ErrTxWithNoPayment       = errors.New("tx with no payment")
 	ErrTxIsNotValidated      = errors.New("tx is not validated")
+	ErrGetUnderlying         = errors.New("get underlying address error")
+	ErrGetMPC                = errors.New("get mpc address error")
+	ErrTokenDecimals         = errors.New("get token decimals error")
+	ErrPublicKey             = errors.New("address and public key not match error")
 
 	// errors should register in router swap
 	ErrTxWithWrongValue  = errors.New("tx with wrong value")

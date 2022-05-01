@@ -1,6 +1,7 @@
 package near
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -8,6 +9,13 @@ import (
 	"github.com/anyswap/CrossChain-Router/v3/mongodb"
 	"github.com/anyswap/CrossChain-Router/v3/router"
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
+)
+
+var (
+	GetFtMetadata        = "ft_metadata"
+	GetUnderlyingAddress = "underlying"
+	GetMPCAddress        = "mpc_id"
+	EmptyArgs            = "e30="
 )
 
 // InitAfterConfig init variables (ie. extra members) after loading config
@@ -38,7 +46,7 @@ func (b *Bridge) InitRouterInfo(routerContract string) (err error) {
 		log.Warn("get mpc public key failed", "mpc", routerMPC, "err", err)
 		return err
 	}
-	if err = VerifyMPCPubKey(routerMPC, routerMPCPubkey); err != nil {
+	if err = b.VerifyPubKey(routerMPC, routerMPCPubkey); err != nil {
 		log.Warn("verify mpc public key failed", "mpc", routerMPC, "mpcPubkey", routerMPCPubkey, "err", err)
 		return err
 	}
@@ -100,15 +108,38 @@ func (b *Bridge) SetTokenConfig(tokenAddr string, tokenCfg *tokens.TokenConfig) 
 
 // GetTokenDecimals query token decimals
 func (b *Bridge) GetTokenDecimals(tokenAddr string) (uint8, error) {
-	return 0, tokens.ErrNotImplemented
+	urls := append(b.GatewayConfig.APIAddress, b.GatewayConfig.APIAddressExt...)
+	for _, url := range urls {
+		result, err := functionCall(url, tokenAddr, GetFtMetadata, EmptyArgs)
+		if err == nil {
+			ftMetadata := &FungibleTokenMetadata{}
+			json.Unmarshal(result, ftMetadata)
+			return ftMetadata.Decimals, nil
+		}
+	}
+	return 0, tokens.ErrTokenDecimals
 }
 
 // GetUnderlyingAddress query underlying address
 func (b *Bridge) GetUnderlyingAddress(contractAddr string) (string, error) {
-	return "", tokens.ErrNotImplemented
+	urls := append(b.GatewayConfig.APIAddress, b.GatewayConfig.APIAddressExt...)
+	for _, url := range urls {
+		result, err := functionCall(url, contractAddr, GetUnderlyingAddress, EmptyArgs)
+		if err == nil {
+			return string(result[:]), nil
+		}
+	}
+	return "", tokens.ErrGetUnderlying
 }
 
 // GetMPCAddress query mpc address
 func (b *Bridge) GetMPCAddress(contractAddr string) (string, error) {
-	return "", tokens.ErrNotImplemented
+	urls := append(b.GatewayConfig.APIAddress, b.GatewayConfig.APIAddressExt...)
+	for _, url := range urls {
+		result, err := functionCall(url, contractAddr, GetMPCAddress, EmptyArgs)
+		if err == nil {
+			return string(result[:]), nil
+		}
+	}
+	return "", tokens.ErrGetMPC
 }

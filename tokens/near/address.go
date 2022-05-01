@@ -84,7 +84,13 @@ func StringToPrivateKey(priv string) ed25519.PrivateKey {
 	return ed25519.PrivateKey(privateKey)
 }
 
-// VerifyMPCPubKey verify mpc address and public key is matching
-func VerifyMPCPubKey(mpcAddress, mpcPubkey string) error {
-	return tokens.ErrNotImplemented
+func (b *Bridge) VerifyPubKey(address, pubkey string) error {
+	urls := append(b.GatewayConfig.APIAddress, b.GatewayConfig.APIAddressExt...)
+	for _, url := range urls {
+		_, err := GetAccountNonce(url, address, pubkey)
+		if err == nil {
+			return nil
+		}
+	}
+	return tokens.ErrPublicKey
 }
