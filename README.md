@@ -11,13 +11,21 @@ run the above command, it will generate `./build/bin/swaprouter` binary.
 
 deploy a `AnyswapRouter` contract for each supported blockchain
 
+eg. [AnyswapV6Router.sol](https://github.com/anyswap/anyswap-v1-core/blob/master/contracts/AnyswapV6Router.sol)
+
 ## 2. deploy `AnyswapERC20`
 
 deploy a `AnyswapERC20` contract for each token on each blockchain
 
+eg. [AnyswapV6ERC20.sol](https://github.com/anyswap/anyswap-v1-core/blob/master/contracts/AnyswapV6ERC20.sol)
+
+eg. [AnyswapV6ERC20-NonEVM.sol](https://github.com/anyswap/anyswap-v1-core/blob/master/contracts/AnyswapV6ERC20-NonEVM.sol)
+
 ## 3. deploy `RouterConfig`
 
 deploy a `RouterConfig` contract to store router bridge configs
+
+eg. [RouterConfigV2.sol](https://github.com/anyswap/router-config/blob/main/contracts/RouterConfigV2.sol)
 
 ## 4. set router config on chain
 
@@ -54,7 +62,23 @@ function setSwapAndFeeConfig(
         uint256 maxFee, uint256 minFee, uint256 feeRate)
 ```
 
-#### 4.3.2 set swap config
+```text
+the actual swap config is decided by the following steps
+1. if _swapConfig[tokenID][srcChainID][dstChainID] exist, then use it.
+2. else if _swapConfig[tokenID][srcChainID][0] exist, then use it.
+3. else if _swapConfig[tokenID][0][dstChainID] exist, then use it.
+4. else use _swapConfig[tokenID][0][0].
+```
+
+```text
+the actual fee config is decided by the following steps
+1. if _feeConfig[tokenID][srcChainID][dstChainID] exist, then use it.
+2. else if _feeConfig[tokenID][srcChainID][0] exist, then use it.
+3. else if _feeConfig[tokenID][0][dstChainID] exist, then use it.
+4. else use _feeConfig[tokenID][0][0].
+```
+
+#### 4.3.2 set swap config alone
 
 call the following contract function to set swap config:
 
@@ -69,15 +93,7 @@ swap config is stored in a map with keys tokenID,srcChainID,dstChainID
 mapping (bytes32 => mapping(uint256 => mapping(uint256 => SwapConfig))) private _swapConfig;
 ```
 
-```text
-the actual swap config is decided by the following steps
-1. if _swapConfig[tokenID][srcChainID][dstChainID] exist, then use it.
-2. else if _swapConfig[tokenID][srcChainID][0] exist, then use it.
-3. else if _swapConfig[tokenID][0][dstChainID] exist, then use it.
-4. else use _swapConfig[tokenID][0][0].
-```
-
-#### 4.3.3 set fee config
+#### 4.3.3 set fee config alone
 
 call the following contract function:
 
@@ -92,14 +108,6 @@ function setFeeConfig(string tokenID, uint256 srcChainID, uint256 dstChainID, ui
 fee config is stored in a map with keys tokenID,srcChainID,dstChainID
 ```solidity
 mapping (bytes32 => mapping(uint256 => mapping(uint256 => FeeConfig))) private _feeConfig;
-```
-
-```text
-the actual fee config is decided by the following steps
-1. if _feeConfig[tokenID][srcChainID][dstChainID] exist, then use it.
-2. else if _feeConfig[tokenID][srcChainID][0] exist, then use it.
-3. else if _feeConfig[tokenID][0][dstChainID] exist, then use it.
-4. else use _feeConfig[tokenID][0][0].
 ```
 
 ### 4.4 set mpc address's public key
