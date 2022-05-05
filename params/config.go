@@ -499,6 +499,38 @@ func IsInCallByContractWhitelist(chainID, caller string) bool {
 	return exist
 }
 
+// AddOrRemoveCallByContractWhitelist add or remove call by contract whitelist
+//nolint:dupl // allow duplicate
+func AddOrRemoveCallByContractWhitelist(chainID string, callers []string, isAdd bool) {
+	whitelist, exist := callByContractWhitelist[chainID]
+	if !exist {
+		if !isAdd {
+			return
+		}
+		callByContractWhitelist = make(map[string]map[string]struct{})
+		callByContractWhitelist[chainID] = make(map[string]struct{})
+		whitelist = callByContractWhitelist[chainID]
+	}
+	for _, caller := range callers {
+		key := strings.ToLower(caller)
+		if isAdd {
+			whitelist[key] = struct{}{}
+		} else {
+			delete(whitelist, key)
+		}
+	}
+	if GetExtraConfig() != nil {
+		chainWhitelist := make([]string, 0, len(whitelist))
+		for caller := range whitelist {
+			chainWhitelist = append(chainWhitelist, caller)
+		}
+		if GetExtraConfig().CallByContractWhitelist == nil {
+			GetExtraConfig().CallByContractWhitelist = make(map[string][]string)
+		}
+		GetExtraConfig().CallByContractWhitelist[chainID] = chainWhitelist
+	}
+}
+
 func initCallByContractCodeHashWhitelist() {
 	callByContractCodeHashWhitelist = make(map[string]map[string]struct{})
 	if GetExtraConfig() == nil || len(GetExtraConfig().CallByContractCodeHashWhitelist) == 0 {
@@ -536,6 +568,37 @@ func IsInCallByContractCodeHashWhitelist(chainID, codehash string) bool {
 	return exist
 }
 
+// AddOrRemoveCallByContractCodeHashWhitelist add or remove call by contract code hash whitelist
+func AddOrRemoveCallByContractCodeHashWhitelist(chainID string, codehashes []string, isAdd bool) {
+	whitelist, exist := callByContractCodeHashWhitelist[chainID]
+	if !exist {
+		if !isAdd {
+			return
+		}
+		callByContractCodeHashWhitelist = make(map[string]map[string]struct{})
+		callByContractCodeHashWhitelist[chainID] = make(map[string]struct{})
+		whitelist = callByContractCodeHashWhitelist[chainID]
+	}
+	for _, codehash := range codehashes {
+		key := codehash
+		if isAdd {
+			whitelist[key] = struct{}{}
+		} else {
+			delete(whitelist, key)
+		}
+	}
+	if GetExtraConfig() != nil {
+		chainWhitelist := make([]string, 0, len(whitelist))
+		for codehash := range whitelist {
+			chainWhitelist = append(chainWhitelist, codehash)
+		}
+		if GetExtraConfig().CallByContractCodeHashWhitelist == nil {
+			GetExtraConfig().CallByContractCodeHashWhitelist = make(map[string][]string)
+		}
+		GetExtraConfig().CallByContractCodeHashWhitelist[chainID] = chainWhitelist
+	}
+}
+
 func initBigValueWhitelist() {
 	bigValueWhitelist = make(map[string]map[string]struct{})
 	if GetExtraConfig() == nil || len(GetExtraConfig().BigValueWhitelist) == 0 {
@@ -562,6 +625,38 @@ func IsInBigValueWhitelist(tokenID, caller string) bool {
 	}
 	_, exist = whitelist[strings.ToLower(caller)]
 	return exist
+}
+
+// AddOrRemoveBigValueWhitelist add or remove big value whitelist
+//nolint:dupl // allow duplicate
+func AddOrRemoveBigValueWhitelist(tokenID string, callers []string, isAdd bool) {
+	whitelist, exist := bigValueWhitelist[tokenID]
+	if !exist {
+		if !isAdd {
+			return
+		}
+		bigValueWhitelist = make(map[string]map[string]struct{})
+		bigValueWhitelist[tokenID] = make(map[string]struct{})
+		whitelist = bigValueWhitelist[tokenID]
+	}
+	for _, caller := range callers {
+		key := strings.ToLower(caller)
+		if isAdd {
+			whitelist[key] = struct{}{}
+		} else {
+			delete(whitelist, key)
+		}
+	}
+	if GetExtraConfig() != nil {
+		tokenWhitelist := make([]string, 0, len(whitelist))
+		for caller := range whitelist {
+			tokenWhitelist = append(tokenWhitelist, caller)
+		}
+		if GetExtraConfig().BigValueWhitelist == nil {
+			GetExtraConfig().BigValueWhitelist = make(map[string][]string)
+		}
+		GetExtraConfig().BigValueWhitelist[tokenID] = tokenWhitelist
+	}
 }
 
 // IsMPCInitiator is initiator of mpc sign
@@ -645,16 +740,72 @@ func IsChainIDInBlackList(chainID string) bool {
 	return exist
 }
 
+// AddOrRemoveChainIDBlackList add or remove chainID blacklist
+func AddOrRemoveChainIDBlackList(chainIDs []string, isAdd bool) {
+	for _, chainID := range chainIDs {
+		if isAdd {
+			chainIDBlacklistMap[chainID] = struct{}{}
+		} else {
+			delete(chainIDBlacklistMap, chainID)
+		}
+	}
+	if GetRouterServerConfig() != nil {
+		blacklist := make([]string, 0, len(chainIDBlacklistMap))
+		for chainID := range chainIDBlacklistMap {
+			blacklist = append(blacklist, chainID)
+		}
+		GetRouterServerConfig().ChainIDBlackList = blacklist
+	}
+}
+
 // IsTokenIDInBlackList is token id in black list
 func IsTokenIDInBlackList(tokenID string) bool {
 	_, exist := tokenIDBlacklistMap[strings.ToLower(tokenID)]
 	return exist
 }
 
+// AddOrRemoveTokenIDBlackList add or remove tokenID blacklist
+func AddOrRemoveTokenIDBlackList(tokenIDs []string, isAdd bool) {
+	for _, tokenID := range tokenIDs {
+		key := strings.ToLower(tokenID)
+		if isAdd {
+			tokenIDBlacklistMap[key] = struct{}{}
+		} else {
+			delete(tokenIDBlacklistMap, key)
+		}
+	}
+	if GetRouterServerConfig() != nil {
+		blacklist := make([]string, 0, len(tokenIDBlacklistMap))
+		for tokenID := range tokenIDBlacklistMap {
+			blacklist = append(blacklist, tokenID)
+		}
+		GetRouterServerConfig().TokenIDBlackList = blacklist
+	}
+}
+
 // IsAccountInBlackList is account in black list
 func IsAccountInBlackList(account string) bool {
 	_, exist := accountBlacklistMap[strings.ToLower(account)]
 	return exist
+}
+
+// AddOrRemoveAccountBlackList add or remove account blacklist
+func AddOrRemoveAccountBlackList(accounts []string, isAdd bool) {
+	for _, account := range accounts {
+		key := strings.ToLower(account)
+		if isAdd {
+			accountBlacklistMap[key] = struct{}{}
+		} else {
+			delete(accountBlacklistMap, key)
+		}
+	}
+	if GetRouterServerConfig() != nil {
+		blacklist := make([]string, 0, len(accountBlacklistMap))
+		for account := range accountBlacklistMap {
+			blacklist = append(blacklist, account)
+		}
+		GetRouterServerConfig().AccountBlackList = blacklist
+	}
 }
 
 func initAutoSwapNonceEnabledChains() {
