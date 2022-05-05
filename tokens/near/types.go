@@ -183,11 +183,11 @@ type FunctionCallResult struct {
 }
 
 type FungibleTokenMetadata struct {
-	Spec           string `json:"spec"`
-	Name           string `json:"name"`
-	Symbol         string `json:"symbol"`
-	Icon           string `json:"icon"`
-	Reference      string `json:"reference"`
-	Reference_hash string `json:"reference_hash"`
-	Decimals       uint8  `json:"decimals"`
+	Spec          string `json:"spec"`
+	Name          string `json:"name"`
+	Symbol        string `json:"symbol"`
+	Icon          string `json:"icon"`
+	Reference     string `json:"reference"`
+	ReferenceHash string `json:"reference_hash"`
+	Decimals      uint8  `json:"decimals"`
 }

@@ -129,7 +129,7 @@ func (b *Bridge) GetUnderlyingAddress(contractAddr string) (string, error) {
 	for _, url := range urls {
 		result, err := functionCall(url, contractAddr, GetUnderlyingAddress, EmptyArgs)
 		if err == nil {
-			return string(result[:]), nil
+			return string(result), nil
 		}
 	}
 	return "", tokens.ErrGetUnderlying
@@ -141,7 +141,7 @@ func (b *Bridge) GetMPCAddress(contractAddr string) (string, error) {
 	for _, url := range urls {
 		result, err := functionCall(url, contractAddr, GetMPCAddress, EmptyArgs)
 		if err == nil {
-			return string(result[:]), nil
+			return string(result), nil
 		}
 	}
 	return "", tokens.ErrGetMPC

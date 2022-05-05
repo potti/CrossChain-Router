@@ -17,7 +17,10 @@ var (
 )
 
 const (
-	blockMethod = "block"
+	blockMethod             = "block"
+	txMethod                = "tx"
+	queryMethod             = "query"
+	broadcastTxCommitMethod = "broadcast_tx_commit"
 )
 
 // SetRPCTimeout set rpc timeout
@@ -71,7 +74,7 @@ func GetLatestBlockNumber(url string) (uint64, error) {
 // GetTransactionByHash get tx by hash
 func GetTransactionByHash(url, txHash, senderID string) (*TransactionResult, error) {
 	request := &client.Request{}
-	request.Method = "tx"
+	request.Method = txMethod
 	request.Params = []string{txHash, senderID}
 	request.ID = int(time.Now().UnixNano())
 	request.Timeout = rpcTimeout
@@ -90,7 +93,7 @@ func GetTransactionByHash(url, txHash, senderID string) (*TransactionResult, err
 // GetLatestBlockNumber get latest block height
 func GetAccountNonce(url, account, publicKey string) (uint64, error) {
 	request := &client.Request{}
-	request.Method = "query"
+	request.Method = queryMethod
 	request.Params = map[string]string{"request_type": "view_access_key", "finality": "final", "account_id": account, "public_key": publicKey}
 	request.ID = int(time.Now().UnixNano())
 	request.Timeout = rpcTimeout
@@ -108,7 +111,7 @@ func GetAccountNonce(url, account, publicKey string) (uint64, error) {
 func BroadcastTxCommit(url string, signedTx []byte) (string, error) {
 	log.Info("BroadcastTxCommit", "url", url, "signedTx", base64.StdEncoding.EncodeToString(signedTx))
 	request := &client.Request{}
-	request.Method = "broadcast_tx_commit"
+	request.Method = broadcastTxCommitMethod
 	request.Params = []string{base64.StdEncoding.EncodeToString(signedTx)}
 	request.ID = int(time.Now().UnixNano())
 	request.Timeout = rpcTimeout
@@ -120,10 +123,10 @@ func BroadcastTxCommit(url string, signedTx []byte) (string, error) {
 	return result.Transaction.Hash, nil
 }
 
-func functionCall(url, accountId, methodName, args string) ([]byte, error) {
+func functionCall(url, accountID, methodName, args string) ([]byte, error) {
 	request := &client.Request{}
-	request.Method = "query"
-	request.Params = map[string]string{"request_type": "call_function", "finality": "final", "account_id": accountId, "method_name": methodName, "args_base64": args}
+	request.Method = queryMethod
+	request.Params = map[string]string{"request_type": "call_function", "finality": "final", "account_id": accountID, "method_name": methodName, "args_base64": args}
 	request.ID = int(time.Now().UnixNano())
 	request.Timeout = rpcTimeout
 	var result FunctionCallResult
