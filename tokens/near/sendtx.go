@@ -37,5 +37,5 @@ func (b *Bridge) BroadcastTxCommit(signedTx []byte) (result string, err error) {
 	if success {
 		return result, nil
 	}
-	return "", tokens.ErrRPCQueryError
+	return "", tokens.ErrBroadcastTx
 }

@@ -28,7 +28,7 @@ func (b *Bridge) GetAccountNonce(account, publicKey string) (uint64, error) {
 			return result, nil
 		}
 	}
-	return 0, tokens.ErrRPCQueryError
+	return 0, tokens.ErrGetAccountNonce
 }
 
 // PublicKeyToAddress public key to address

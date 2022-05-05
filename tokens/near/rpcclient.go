@@ -100,9 +100,9 @@ func GetAccountNonce(url, account, publicKey string) (uint64, error) {
 		return 0, err
 	}
 	if result["nonce"] == nil {
-		return 0, tokens.ErrRPCQueryError
+		return 0, tokens.ErrGetAccountNonce
 	}
-	return uint64(result["nonce"].(float64)), nil
+	return uint64(result["nonce"].(float64)) + 1, nil
 }
 
 func BroadcastTxCommit(url string, signedTx []byte) (string, error) {

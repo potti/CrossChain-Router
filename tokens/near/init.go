@@ -113,7 +113,10 @@ func (b *Bridge) GetTokenDecimals(tokenAddr string) (uint8, error) {
 		result, err := functionCall(url, tokenAddr, GetFtMetadata, EmptyArgs)
 		if err == nil {
 			ftMetadata := &FungibleTokenMetadata{}
-			json.Unmarshal(result, ftMetadata)
+			errf := json.Unmarshal(result, ftMetadata)
+			if errf != nil {
+				return 0, errf
+			}
 			return ftMetadata.Decimals, nil
 		}
 	}

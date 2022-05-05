@@ -39,7 +39,7 @@ func (b *Bridge) GetLatestBlockNumber() (uint64, error) {
 			return result, nil
 		}
 	}
-	return 0, tokens.ErrRPCQueryError
+	return 0, tokens.ErrGetLatestBlockNumber
 }
 
 func (b *Bridge) GetLatestBlockHash() (string, error) {
@@ -50,7 +50,7 @@ func (b *Bridge) GetLatestBlockHash() (string, error) {
 			return result, nil
 		}
 	}
-	return "", tokens.ErrRPCQueryError
+	return "", tokens.ErrGetLatestBlockHash
 }
 
 // GetLatestBlockNumberOf gets latest block number from single api
@@ -66,7 +66,7 @@ func (b *Bridge) GetBlockNumberByHash(txhash string) (uint64, error) {
 			return result, nil
 		}
 	}
-	return 0, tokens.ErrRPCQueryError
+	return 0, tokens.ErrGetLatestBlockNumber
 }
 
 // GetTransaction impl
