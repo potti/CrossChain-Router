@@ -1,6 +1,8 @@
 package near
 
 import (
+	"math/big"
+
 	"github.com/anyswap/CrossChain-Router/v3/log"
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
 	"github.com/anyswap/CrossChain-Router/v3/tokens/base"
@@ -11,6 +13,14 @@ var (
 	_ tokens.IBridge = &Bridge{}
 	// ensure Bridge impl tokens.NonceSetter
 	_ tokens.NonceSetter = &Bridge{}
+
+	// SupportedChainIDs supported chainIDs
+	SupportedChainIDs = make(map[string]bool)
+)
+
+const (
+	mainnetNetWork = "mainnet"
+	testnetNetWork = "testnet"
 )
 
 // Bridge near bridge
@@ -20,9 +30,26 @@ type Bridge struct {
 
 // NewCrossChainBridge new bridge
 func NewCrossChainBridge() *Bridge {
+	SupportedChainIDs[GetStubChainID(mainnetNetWork).String()] = true
+	SupportedChainIDs[GetStubChainID(testnetNetWork).String()] = true
 	return &Bridge{
 		NonceSetterBase: base.NewNonceSetterBase(),
 	}
+}
+
+// GetStubChainID get stub chainID
+func GetStubChainID(network string) *big.Int {
+	stubChainID := new(big.Int).SetBytes([]byte("NEAR"))
+	switch network {
+	case mainnetNetWork:
+	case testnetNetWork:
+		stubChainID.Add(stubChainID, big.NewInt(1))
+	default:
+		log.Fatalf("unknown network %v", network)
+	}
+	stubChainID.Mod(stubChainID, tokens.StubChainIDBase)
+	stubChainID.Add(stubChainID, tokens.StubChainIDBase)
+	return stubChainID
 }
 
 // VerifyTokenConfig verify token config
