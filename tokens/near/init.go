@@ -20,7 +20,6 @@ var (
 
 // InitAfterConfig init variables (ie. extra members) after loading config
 func (b *Bridge) InitAfterConfig() {
-	router.SetMPCPublicKey("userdemo.testnet", "ed25519:MTjQVM8fgKSgfq8Uuer2nGRXL9dHLGYQDBkdxwmrdDB")
 }
 
 // InitRouterInfo init router info
@@ -129,7 +128,7 @@ func (b *Bridge) GetUnderlyingAddress(contractAddr string) (string, error) {
 	for _, url := range urls {
 		result, err := functionCall(url, contractAddr, GetUnderlyingAddress, EmptyArgs)
 		if err == nil {
-			return string(result), nil
+			return string(result[1 : len(result)-1]), nil
 		}
 	}
 	return "", tokens.ErrGetUnderlying
@@ -141,7 +140,7 @@ func (b *Bridge) GetMPCAddress(contractAddr string) (string, error) {
 	for _, url := range urls {
 		result, err := functionCall(url, contractAddr, GetMPCAddress, EmptyArgs)
 		if err == nil {
-			return string(result), nil
+			return string(result[1 : len(result)-1]), nil
 		}
 	}
 	return "", tokens.ErrGetMPC

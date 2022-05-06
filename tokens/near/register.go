@@ -24,9 +24,10 @@ func (b *Bridge) RegisterSwap(txHash string, args *tokens.RegisterArgs) ([]*toke
 func (b *Bridge) registerERC20SwapTx(txHash string, logIndex int) ([]*tokens.SwapTxInfo, []error) {
 	log.Info("registerERC20SwapTx", "txhash:", txHash, "logIndex:", logIndex)
 	commonInfo := &tokens.SwapTxInfo{SwapInfo: tokens.SwapInfo{ERC20SwapInfo: &tokens.ERC20SwapInfo{}}}
-	commonInfo.SwapType = tokens.ERC20SwapType // SwapType
-	commonInfo.Hash = txHash                   // Hash
-	commonInfo.LogIndex = logIndex             // LogIndex
+	commonInfo.SwapType = tokens.ERC20SwapType          // SwapType
+	commonInfo.Hash = txHash                            // Hash
+	commonInfo.LogIndex = logIndex                      // LogIndex
+	commonInfo.FromChainID = b.ChainConfig.GetChainID() // FromChainID
 
 	receipt, err := b.getSwapTxReceipt(commonInfo, true)
 	if err != nil {
