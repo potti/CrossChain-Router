@@ -203,6 +203,8 @@ APIAddress = ["http://127.0.0.1:8711", "http://127.0.0.1:8722"]
 
 # MPC config
 [MPC]
+# ec sign type key (old: ECDSA, new: EC256K1)
+SignTypeEC256K1 = "EC256K1"
 # mpc rpc api prefix
 APIPrefix = "smpc_"
 # RPC timeout
@@ -238,7 +240,7 @@ SignWithPrivateKey = false
 4     = "0x1111111111111111111111111111111111111111111111111111111111111111"
 46688 = "0x2222222222222222222222222222222222222222222222222222222222222222"
 
-# MPC default node config
+# mpc default node config
 [MPC.DefaultNode]
 # mpc sub groups for signing (server only)
 SignGroups = [

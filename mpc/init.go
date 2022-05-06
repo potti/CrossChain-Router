@@ -22,8 +22,8 @@ const (
 )
 
 // sign type constants
-const (
-	SignTypeEC256K1 = "ECDSA"
+var (
+	SignTypeEC256K1 = "EC256K1"
 	SignTypeED25519 = "ED25519"
 )
 
@@ -67,6 +67,9 @@ type NodeInfo struct {
 
 // Init init mpc
 func Init(mpcConfig *params.MPCConfig, isServer bool) {
+	if mpcConfig.SignTypeEC256K1 != "" {
+		SignTypeEC256K1 = mpcConfig.SignTypeEC256K1
+	}
 	if mpcConfig.APIPrefix != "" {
 		mpcAPIPrefix = mpcConfig.APIPrefix
 	}
