@@ -12,7 +12,7 @@ import (
 // NewCrossChainBridge new bridge
 func NewCrossChainBridge(chainID *big.Int) tokens.IBridge {
 	switch {
-	case near.SupportedChainIDs[chainID.String()]:
+	case near.SupportsChainID(chainID):
 		return near.NewCrossChainBridge()
 	case chainID.Sign() <= 0:
 		log.Fatal("wrong chainID", "chainID", chainID)

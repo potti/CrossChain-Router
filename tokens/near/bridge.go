@@ -14,8 +14,7 @@ var (
 	// ensure Bridge impl tokens.NonceSetter
 	_ tokens.NonceSetter = &Bridge{}
 
-	// SupportedChainIDs supported chainIDs
-	SupportedChainIDs = make(map[string]bool)
+	supportedChainIDs = make(map[string]bool)
 )
 
 const (
@@ -28,10 +27,17 @@ type Bridge struct {
 	*base.NonceSetterBase
 }
 
+// SupportsChainID supports chainID
+func SupportsChainID(chainID *big.Int) bool {
+	if len(supportedChainIDs) == 0 {
+		supportedChainIDs[GetStubChainID(mainnetNetWork).String()] = true
+		supportedChainIDs[GetStubChainID(testnetNetWork).String()] = true
+	}
+	return supportedChainIDs[chainID.String()]
+}
+
 // NewCrossChainBridge new bridge
 func NewCrossChainBridge() *Bridge {
-	SupportedChainIDs[GetStubChainID(mainnetNetWork).String()] = true
-	SupportedChainIDs[GetStubChainID(testnetNetWork).String()] = true
 	return &Bridge{
 		NonceSetterBase: base.NewNonceSetterBase(),
 	}
