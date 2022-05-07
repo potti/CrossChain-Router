@@ -82,7 +82,7 @@ the actual fee config is decided by the following steps
 
 call the following contract function to set swap config:
 
-max/min/big value always uses decimals 18.
+max/min/big value always uses decimals 18 (like precision).
 
 ```solidity
 function setSwapConfig(string tokenID, uint256 srcChainID, uint256 dstChainID, uint256 maxSwap, uint256 minSwap, uint256 bigSwap)
@@ -99,7 +99,7 @@ call the following contract function:
 
 rate is per million ration.
 
-max/min value uses decimals same as token decimals on source chain.
+max/min value always uses decimals 18 (like precision).
 
 ```solidity
 function setFeeConfig(string tokenID, uint256 srcChainID, uint256 dstChainID, uint256 maxFee, uint256 minFee, uint256 feeRate)

@@ -5,8 +5,10 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"strings"
 
+	"github.com/anyswap/CrossChain-Router/v3/common"
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
 	"github.com/btcsuite/btcutil/base58"
 )
@@ -17,11 +19,11 @@ var (
 
 // IsValidAddress check address
 func (b *Bridge) IsValidAddress(address string) bool {
-	return true
+	return address != ""
 }
 
 func (b *Bridge) GetAccountNonce(account, publicKey string) (uint64, error) {
-	urls := b.GatewayConfig.APIAddress
+	urls := append(b.GatewayConfig.APIAddress, b.GatewayConfig.APIAddressExt...)
 	for _, url := range urls {
 		result, err := GetAccountNonce(url, account, publicKey)
 		if err == nil {
@@ -32,8 +34,8 @@ func (b *Bridge) GetAccountNonce(account, publicKey string) (uint64, error) {
 }
 
 // PublicKeyToAddress public key to address
-func (b *Bridge) PublicKeyToAddress(pubKey string) (string, error) {
-	return "", tokens.ErrNotImplemented
+func (b *Bridge) PublicKeyToAddress(nearPublicKey string) (string, error) {
+	return nearPublicKeyTompcSignPublicKey(nearPublicKey), nil
 }
 
 func GenerateKey() (seed, pub []byte, err error) {
@@ -84,18 +86,21 @@ func StringToPrivateKey(priv string) ed25519.PrivateKey {
 	return ed25519.PrivateKey(privateKey)
 }
 
-func nearPublicKeyTompcPublicKey(nearPublicKey string) string {
-	bs58 := StringToPublicKey(nearPublicKey)
-	return PublicKeyToAddress(bs58)
+func nearPublicKeyTompcSignPublicKey(nearPublicKey string) string {
+	pubKey := StringToPublicKey(nearPublicKey)
+	return PublicKeyToAddress(pubKey)
 }
 
 func (b *Bridge) VerifyPubKey(address, pubkey string) error {
-	urls := append(b.GatewayConfig.APIAddress, b.GatewayConfig.APIAddressExt...)
-	for _, url := range urls {
-		_, err := GetAccountNonce(url, address, pubkey)
-		if err == nil {
-			return nil
+	if common.IsHexHash(address) {
+		pubAddr := nearPublicKeyTompcSignPublicKey(pubkey)
+		if !strings.EqualFold(pubAddr, address) {
+			return fmt.Errorf("address %v and public key address %v is not match", address, pubAddr)
 		}
 	}
-	return tokens.ErrPublicKey
+	_, err := b.GetAccountNonce(address, pubkey)
+	if err != nil {
+		return fmt.Errorf("verify public key failed, %w", err)
+	}
+	return nil
 }
