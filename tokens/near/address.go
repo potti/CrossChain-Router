@@ -84,6 +84,11 @@ func StringToPrivateKey(priv string) ed25519.PrivateKey {
 	return ed25519.PrivateKey(privateKey)
 }
 
+func nearPublicKeyTompcPublicKey(nearPublicKey string) string {
+	bs58 := StringToPublicKey(nearPublicKey)
+	return PublicKeyToAddress(bs58)
+}
+
 func (b *Bridge) VerifyPubKey(address, pubkey string) error {
 	urls := append(b.GatewayConfig.APIAddress, b.GatewayConfig.APIAddressExt...)
 	for _, url := range urls {

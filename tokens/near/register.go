@@ -2,7 +2,6 @@ package near
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/anyswap/CrossChain-Router/v3/log"
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
@@ -58,6 +57,5 @@ func (b *Bridge) registerERC20SwapTx(txHash string, logIndex int) ([]*tokens.Swa
 	if len(swapInfos) == 0 {
 		return []*tokens.SwapTxInfo{commonInfo}, []error{tokens.ErrSwapoutLogNotFound}
 	}
-	fmt.Println("swapInfos=======", swapInfos)
 	return swapInfos, errs
 }
