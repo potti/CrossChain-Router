@@ -12,7 +12,7 @@ import (
 	"github.com/anyswap/CrossChain-Router/v3/params"
 	"github.com/anyswap/CrossChain-Router/v3/router"
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
-	"github.com/btcsuite/btcutil/base58"
+	"github.com/mr-tron/base58"
 )
 
 const (
@@ -25,6 +25,7 @@ var (
 )
 
 // BuildRawTransaction build raw tx
+//nolint:gocyclo // ok
 func (b *Bridge) BuildRawTransaction(args *tokens.BuildTxArgs) (rawTx interface{}, err error) {
 	if !params.IsTestMode && args.ToChainID.String() != b.ChainConfig.ChainID {
 		return nil, tokens.ErrToChainIDMismatch
@@ -51,9 +52,13 @@ func (b *Bridge) BuildRawTransaction(args *tokens.BuildTxArgs) (rawTx interface{
 	}
 
 	mpcPubkey := router.GetMPCPublicKey(args.From)
-
 	if mpcPubkey == "" {
 		return nil, tokens.ErrMissMPCPublicKey
+	}
+
+	nearPubKey, err := PublicKeyFromString(mpcPubkey)
+	if err != nil {
+		return nil, err
 	}
 
 	erc20SwapInfo := args.ERC20SwapInfo
@@ -82,10 +87,14 @@ func (b *Bridge) BuildRawTransaction(args *tokens.BuildTxArgs) (rawTx interface{
 	if getBlockHashErr != nil {
 		return nil, getBlockHashErr
 	}
+	blockHashBytes, err := base58.Decode(blockHash)
+	if err != nil {
+		return nil, err
+	}
 
 	actions := createFunctionCall(args.SwapID, multichainToken, receiver, amount.String(), args.FromChainID.String(), *extra.Gas)
 	routerContract := b.GetRouterContract(multichainToken)
-	rawTx = createTransaction(args.From, PublicKeyFromEd25519(StringToPublicKey(mpcPubkey)), routerContract, *extra.Sequence, base58.Decode(blockHash), actions)
+	rawTx = createTransaction(args.From, nearPubKey, routerContract, *extra.Sequence, blockHashBytes, actions)
 	return rawTx, nil
 }
 
@@ -177,7 +186,7 @@ func (b *Bridge) GetSeq(args *tokens.BuildTxArgs) (nonceptr *uint64, err error) 
 
 func createTransaction(
 	signerID string,
-	publicKey PublicKey,
+	publicKey *PublicKey,
 	receiverID string,
 	nonce uint64,
 	blockHash []byte,

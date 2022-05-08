@@ -10,7 +10,7 @@ import (
 	"github.com/anyswap/CrossChain-Router/v3/params"
 	"github.com/anyswap/CrossChain-Router/v3/router"
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
-	"github.com/btcsuite/btcutil/base58"
+	"github.com/mr-tron/base58"
 	"github.com/near/borsh-go"
 )
 

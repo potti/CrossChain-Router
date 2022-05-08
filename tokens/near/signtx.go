@@ -16,7 +16,7 @@ import (
 	"github.com/anyswap/CrossChain-Router/v3/params"
 	"github.com/anyswap/CrossChain-Router/v3/router"
 	"github.com/anyswap/CrossChain-Router/v3/tokens"
-	"github.com/btcsuite/btcutil/base58"
+	"github.com/mr-tron/base58"
 	"github.com/near/borsh-go"
 )
 
@@ -34,13 +34,22 @@ func (b *Bridge) MPCSignTransaction(rawTx interface{}, args *tokens.BuildTxArgs)
 
 	if params.SignWithPrivateKey() {
 		privKey := params.GetSignerPrivateKey(b.ChainConfig.ChainID)
-		return b.SignTransactionWithPrivateKey(rawTx, StringToPrivateKey(privKey))
+		edPriKey, errf := StringToPrivateKey(privKey)
+		if errf != nil {
+			return nil, "", errf
+		}
+		return b.SignTransactionWithPrivateKey(rawTx, edPriKey)
 	}
 
 	mpcPubkey := router.GetMPCPublicKey(args.From)
 	if mpcPubkey == "" {
 		return nil, "", tokens.ErrMissMPCPublicKey
 	}
+	nearPubkey, err := PublicKeyFromString(mpcPubkey)
+	if err != nil {
+		return nil, "", err
+	}
+	mpcSignPubkey := common.ToHex(nearPubkey.Bytes())
 
 	buf, err := borsh.Serialize(*tx)
 	if err != nil {
@@ -55,7 +64,6 @@ func (b *Bridge) MPCSignTransaction(rawTx interface{}, args *tokens.BuildTxArgs)
 	logPrefix := b.ChainConfig.BlockChain + " MPCSignTransaction "
 	log.Info(logPrefix+"start", "txid", txid)
 
-	mpcSignPubkey := nearPublicKeyTompcSignPublicKey(mpcPubkey)
 	keyID, rsvs, err := mpc.DoSignOneED(mpcSignPubkey, common.ToHex(hash[:]), msgContext)
 	if err != nil {
 		return nil, "", err
@@ -90,7 +98,7 @@ func (b *Bridge) MPCSignTransaction(rawTx interface{}, args *tokens.BuildTxArgs)
 }
 
 // SignTransactionWithPrivateKey sign tx with ECDSA private key
-func (b *Bridge) SignTransactionWithPrivateKey(rawTx interface{}, privKey ed25519.PrivateKey) (signedTx interface{}, txHash string, err error) {
+func (b *Bridge) SignTransactionWithPrivateKey(rawTx interface{}, privKey *ed25519.PrivateKey) (signedTx interface{}, txHash string, err error) {
 	tx := rawTx.(*RawTransaction)
 	signedTx, txHash, err = signTransaction(tx, privKey)
 	return
@@ -107,7 +115,7 @@ func (b *Bridge) verifyTransactionReceiver(tx *RawTransaction, tokenID string) e
 	return nil
 }
 
-func signTransaction(tx *RawTransaction, privKey ed25519.PrivateKey) (signedTx *SignedTransaction, txHash string, err error) {
+func signTransaction(tx *RawTransaction, privKey *ed25519.PrivateKey) (signedTx *SignedTransaction, txHash string, err error) {
 	buf, err := borsh.Serialize(*tx)
 	if err != nil {
 		return nil, "", err
