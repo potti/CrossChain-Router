@@ -174,6 +174,13 @@ type AnySwapIn struct {
 	FromChainID string `json:"from_chain_id"`
 }
 
+type SwapInNative struct {
+	Tx          string `json:"tx"`
+	To          string `json:"to"`
+	Amount      string `json:"amount"`
+	FromChainID string `json:"from_chain_id"`
+}
+
 type FunctionCallResult struct {
 	BlockHash   string   `json:"block_hash"`
 	BlockHeight uint64   `json:"block_height"`

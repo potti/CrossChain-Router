@@ -16,7 +16,9 @@ import (
 )
 
 const (
-	defaultGasLimit uint64 = 300000000000000
+	defaultGasLimit uint64 = 50000000000000
+	ANY_SWAP_IN     string = "any_swap_in"
+	SWAP_IN_NATIVE  string = "swap_in_native"
 )
 
 var (
@@ -91,8 +93,12 @@ func (b *Bridge) BuildRawTransaction(args *tokens.BuildTxArgs) (rawTx interface{
 	if err != nil {
 		return nil, err
 	}
-
-	actions := createFunctionCall(args.SwapID, multichainToken, receiver, amount.String(), args.FromChainID.String(), *extra.Gas)
+	var actions []Action
+	if args.ERC20SwapInfo.ForNative {
+		actions = createFunctionCall(args.SwapID, SWAP_IN_NATIVE, multichainToken, receiver, amount.String(), args.FromChainID.String(), *extra.Gas)
+	} else {
+		actions = createFunctionCall(args.SwapID, ANY_SWAP_IN, multichainToken, receiver, amount.String(), args.FromChainID.String(), *extra.Gas)
+	}
 	routerContract := b.GetRouterContract(multichainToken)
 	rawTx = createTransaction(args.From, nearPubKey, routerContract, *extra.Sequence, blockHashBytes, actions)
 	return rawTx, nil
@@ -202,8 +208,26 @@ func createTransaction(
 	return &tx
 }
 
-func createFunctionCall(txHash, token, to, amount, fromChainID string, gas uint64) []Action {
-	log.Info("createFunctionCall", "txHash", txHash, "token", token, "to", to, "amount", amount, "fromChainID", fromChainID)
+func createFunctionCall(txHash, methodName, token, to, amount, fromChainID string, gas uint64) []Action {
+	log.Info("createFunctionCall", "txHash", txHash, "methodName", methodName, "token", token, "to", to, "amount", amount, "fromChainID", fromChainID)
+	var argsBytes []byte
+	if methodName == ANY_SWAP_IN {
+		argsBytes = buildAnySwapInArgs(txHash, token, to, amount, fromChainID, gas)
+	} else {
+		argsBytes = buildSwapInNativeArgs(txHash, to, amount, fromChainID, gas)
+	}
+	return []Action{{
+		Enum: 2,
+		FunctionCall: FunctionCall{
+			MethodName: methodName,
+			Args:       argsBytes,
+			Gas:        gas,
+			Deposit:    *big.NewInt(0),
+		},
+	}}
+}
+
+func buildAnySwapInArgs(txHash, token, to, amount, fromChainID string, gas uint64) []byte {
 	callArgs := &AnySwapIn{
 		Tx:          txHash,
 		Token:       token,
@@ -212,13 +236,16 @@ func createFunctionCall(txHash, token, to, amount, fromChainID string, gas uint6
 		FromChainID: fromChainID,
 	}
 	argsBytes, _ := json.Marshal(callArgs)
-	return []Action{{
-		Enum: 2,
-		FunctionCall: FunctionCall{
-			MethodName: "any_swap_in",
-			Args:       argsBytes,
-			Gas:        gas,
-			Deposit:    *big.NewInt(0),
-		},
-	}}
+	return argsBytes
+}
+
+func buildSwapInNativeArgs(txHash, to, amount, fromChainID string, gas uint64) []byte {
+	callArgs := &SwapInNative{
+		Tx:          txHash,
+		To:          to,
+		Amount:      amount,
+		FromChainID: fromChainID,
+	}
+	argsBytes, _ := json.Marshal(callArgs)
+	return argsBytes
 }

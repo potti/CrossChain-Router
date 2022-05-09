@@ -17,7 +17,8 @@ import (
 var (
 	errTxResultType = errors.New("tx type is not TransactionResult")
 	errTxLogParse   = errors.New("tx logs is not LogSwapOut")
-	logFile         = "LogSwapOut"
+	tokenLogSymbol  = "LogSwapOut"
+	nativeLogSymbol = "LogSwapOutNative"
 )
 
 // VerifyMsgHash verify msg hash
@@ -123,7 +124,9 @@ func fliterReceipts(receipts []ReceiptsOutcome, routerAddr string) (logs []strin
 func fliterEvent(logs []string) ([]string, error) {
 	for _, log := range logs {
 		words := strings.Fields(log)
-		if len(words) == 13 && words[0] == logFile {
+		if len(words) == 13 && words[0] == tokenLogSymbol {
+			return words, nil
+		} else if len(words) == 13 && words[0] == nativeLogSymbol {
 			return words, nil
 		}
 	}
@@ -158,6 +161,13 @@ func (b *Bridge) checkTxStatus(txres *TransactionResult, allowUnstable bool) err
 }
 
 func (b *Bridge) parseNep141SwapoutTxEvent(swapInfo *tokens.SwapTxInfo, event []string) error {
+
+	if event[0] == tokenLogSymbol {
+		swapInfo.ERC20SwapInfo.ForNative = false
+	} else {
+		swapInfo.ERC20SwapInfo.ForNative = true
+	}
+
 	swapInfo.ERC20SwapInfo.Token = event[2]
 	swapInfo.From = event[4]
 	swapInfo.Bind = event[6]
