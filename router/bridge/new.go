@@ -12,7 +12,7 @@ import (
 // NewCrossChainBridge new bridge
 func NewCrossChainBridge(chainID *big.Int) tokens.IBridge {
 	switch chainID.Uint64() {
-	case tron.TronMainnetChainID, tron.TronShastaChainID :
+	case tron.TronMainnetChainID, tron.TronShastaChainID:
 		return tron.NewCrossChainBridge()
 	}
 	switch {

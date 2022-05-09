@@ -8,16 +8,16 @@ import (
 	"time"
 
 	tronaddress "github.com/fbsobreira/gotron-sdk/pkg/address"
+	"github.com/fbsobreira/gotron-sdk/pkg/client"
 	tronclient "github.com/fbsobreira/gotron-sdk/pkg/client"
 	"github.com/fbsobreira/gotron-sdk/pkg/proto/api"
 	"github.com/fbsobreira/gotron-sdk/pkg/proto/core"
-	"github.com/fbsobreira/gotron-sdk/pkg/client"
 	"google.golang.org/grpc"
 
+	"github.com/anyswap/CrossChain-Router/v3/common"
 	"github.com/anyswap/CrossChain-Router/v3/common/hexutil"
 	"github.com/anyswap/CrossChain-Router/v3/log"
 	"github.com/anyswap/CrossChain-Router/v3/types"
-	"github.com/anyswap/CrossChain-Router/v3/common"
 )
 
 var GRPC_TIMEOUT = time.Second * 15
@@ -127,14 +127,14 @@ func (b *Bridge) GetTransactionLog(txHash string) ([]*types.RPCLog, error) {
 		return nil, rpcError.Error()
 	}
 	tronlogs := tx.GetLog()
-	logs := make([]*types.RPCLog,0)
+	logs := make([]*types.RPCLog, 0)
 	for _, tlog := range tronlogs {
 		addr := common.BytesToAddress(tlog.Address)
 		data := hexutil.Bytes(tlog.Data)
 		ethlog := &types.RPCLog{
 			Address: &addr,
-			Topics: []common.Hash{},
-			Data: &data,
+			Topics:  []common.Hash{},
+			Data:    &data,
 			Removed: new(bool),
 		}
 		for _, topic := range tlog.Topics {
@@ -240,7 +240,7 @@ func (b *Bridge) GetBalance(account string) (balance *big.Int, err error) {
 }
 
 var SwapinFeeLimit int64 = 300000000 // 300 TRX
-var ExtraExpiration int64 = 900000 // 15 min
+var ExtraExpiration int64 = 900000   // 15 min
 
 func (b *Bridge) BuildTriggerConstantContractTx(from, contract string, dataBytes []byte) (tx *core.Transaction, err error) {
 	fromAddr := tronaddress.HexToAddress(anyToEth(from))

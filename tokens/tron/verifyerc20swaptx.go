@@ -14,8 +14,8 @@ import (
 	"github.com/anyswap/CrossChain-Router/v3/tokens/eth/abicoder"
 	"github.com/anyswap/CrossChain-Router/v3/types"
 
-	"github.com/fbsobreira/gotron-sdk/pkg/proto/core"
 	tronaddress "github.com/fbsobreira/gotron-sdk/pkg/address"
+	"github.com/fbsobreira/gotron-sdk/pkg/proto/core"
 	"github.com/golang/protobuf/ptypes"
 )
 

@@ -1,8 +1,8 @@
 package tron
 
 import (
-	"errors"
 	"crypto/sha256"
+	"errors"
 	"math/big"
 	"strings"
 

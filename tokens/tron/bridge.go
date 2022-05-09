@@ -29,7 +29,7 @@ type Bridge struct {
 	CustomConfig
 	*tokens.CrossChainBridgeBase
 	SignerChainID *big.Int
-	TronChainID *big.Int
+	TronChainID   *big.Int
 }
 
 // NewCrossChainBridge new bridge

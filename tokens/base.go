@@ -13,12 +13,12 @@ import (
 )
 
 var (
-	routerSwapType SwapType
+	routerSwapType           SwapType
 	IsSwapoutToStringAddress bool = false
-	swapConfigMap  = new(sync.Map) // key is tokenID,toChainID
+	swapConfigMap                 = new(sync.Map) // key is tokenID,toChainID
 )
 
-var GetPairFor func (string, string, string) (string, error)
+var GetPairFor func(string, string, string) (string, error)
 
 // IsNativeCoin is native coin
 func IsNativeCoin(name string) bool {

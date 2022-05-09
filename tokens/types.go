@@ -201,11 +201,11 @@ type BuildTxArgs struct {
 
 // AllExtras struct
 type AllExtras struct {
-	EthExtra   *EthExtraArgs `json:"ethExtra,omitempty"`
-	ReplaceNum uint64        `json:"replaceNum,omitempty"`
-	TronExtra *TronExtraArgs `json:"tronExtra,omitempty"`
-	Sequence   *uint64       `json:"sequence,omitempty"`
-	Fee        *string       `json:"fee,omitempty"`
+	EthExtra   *EthExtraArgs  `json:"ethExtra,omitempty"`
+	ReplaceNum uint64         `json:"replaceNum,omitempty"`
+	TronExtra  *TronExtraArgs `json:"tronExtra,omitempty"`
+	Sequence   *uint64        `json:"sequence,omitempty"`
+	Fee        *string        `json:"fee,omitempty"`
 }
 
 // EthExtraArgs struct
@@ -220,8 +220,8 @@ type EthExtraArgs struct {
 
 // TronExtraArgs struct
 type TronExtraArgs struct {
-	RawTx string `json:"rawTx,omitempty"`
-	Deadline  int64    `json:"deadline,omitempty"`
+	RawTx    string `json:"rawTx,omitempty"`
+	Deadline int64  `json:"deadline,omitempty"`
 }
 
 // GetReplaceNum get rplace swap count

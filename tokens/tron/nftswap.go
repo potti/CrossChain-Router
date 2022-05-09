@@ -436,7 +436,7 @@ func (b *Bridge) buildNFTSwapTxInput(args *tokens.BuildTxArgs) (err error) {
 		}
 	}
 
-	args.Input = (*hexutil.Bytes)(&input)          // input
+	args.Input = (*hexutil.Bytes)(&input) // input
 	routerContract := b.GetRouterContract(multichainToken)
 	args.To = anyToTron(routerContract) // to
 
