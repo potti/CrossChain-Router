@@ -32,9 +32,10 @@ func (b *Bridge) MPCSignTransaction(rawTx interface{}, args *tokens.BuildTxArgs)
 		return nil, "", err
 	}
 
-	if params.SignWithPrivateKey() {
-		privKey := params.GetSignerPrivateKey(b.ChainConfig.ChainID)
-		edPriKey, errf := StringToPrivateKey(privKey)
+	mpcParams := params.GetMPCConfig(b.UseFastMPC)
+	if mpcParams.SignWithPrivateKey {
+		priKey := mpcParams.GetSignerPrivateKey(b.ChainConfig.ChainID)
+		edPriKey, errf := StringToPrivateKey(priKey)
 		if errf != nil {
 			return nil, "", errf
 		}
@@ -64,7 +65,8 @@ func (b *Bridge) MPCSignTransaction(rawTx interface{}, args *tokens.BuildTxArgs)
 	logPrefix := b.ChainConfig.BlockChain + " MPCSignTransaction "
 	log.Info(logPrefix+"start", "txid", txid)
 
-	keyID, rsvs, err := mpc.DoSignOneED(mpcSignPubkey, common.ToHex(hash[:]), msgContext)
+	mpcConfig := mpc.GetMPCConfig(b.UseFastMPC)
+	keyID, rsvs, err := mpcConfig.DoSignOneED(mpcSignPubkey, common.ToHex(hash[:]), msgContext)
 	if err != nil {
 		return nil, "", err
 	}
