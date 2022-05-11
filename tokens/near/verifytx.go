@@ -161,7 +161,6 @@ func (b *Bridge) checkTxStatus(txres *TransactionResult, allowUnstable bool) err
 }
 
 func (b *Bridge) parseNep141SwapoutTxEvent(swapInfo *tokens.SwapTxInfo, event []string) error {
-
 	if event[0] == tokenLogSymbol {
 		swapInfo.ERC20SwapInfo.ForNative = false
 	} else {

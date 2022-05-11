@@ -35,11 +35,7 @@ func (b *Bridge) MPCSignTransaction(rawTx interface{}, args *tokens.BuildTxArgs)
 	mpcParams := params.GetMPCConfig(b.UseFastMPC)
 	if mpcParams.SignWithPrivateKey {
 		priKey := mpcParams.GetSignerPrivateKey(b.ChainConfig.ChainID)
-		edPriKey, errf := StringToPrivateKey(priKey)
-		if errf != nil {
-			return nil, "", errf
-		}
-		return b.SignTransactionWithPrivateKey(rawTx, edPriKey)
+		return b.SignTransactionWithPrivateKey(rawTx, priKey)
 	}
 
 	mpcPubkey := router.GetMPCPublicKey(args.From)
@@ -99,11 +95,14 @@ func (b *Bridge) MPCSignTransaction(rawTx interface{}, args *tokens.BuildTxArgs)
 	return &stx, txHash, nil
 }
 
-// SignTransactionWithPrivateKey sign tx with ECDSA private key
-func (b *Bridge) SignTransactionWithPrivateKey(rawTx interface{}, privKey *ed25519.PrivateKey) (signedTx interface{}, txHash string, err error) {
+// SignTransactionWithPrivateKey sign tx with ECDSA private key string
+func (b *Bridge) SignTransactionWithPrivateKey(rawTx interface{}, privKey string) (signedTx interface{}, txHash string, err error) {
 	tx := rawTx.(*RawTransaction)
-	signedTx, txHash, err = signTransaction(tx, privKey)
-	return
+	edPrivKey, err := StringToPrivateKey(privKey)
+	if err != nil {
+		return nil, "", err
+	}
+	return signTransaction(tx, edPrivKey)
 }
 
 func (b *Bridge) verifyTransactionReceiver(tx *RawTransaction, tokenID string) error {
