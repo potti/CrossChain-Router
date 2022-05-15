@@ -21,7 +21,7 @@ AllowCallByContract = false
 IsDebugMode = true
 
 # all chain ids (pass 'miss token config' checking)
-AllChainIDs = ["123", "1337"]
+AllChainIDs = ["1001313161555", "1337"]
 
 [Gateway]
 APIAddress = ["https://archival-rpc.testnet.near.org"]
@@ -29,17 +29,17 @@ APIAddress = ["https://archival-rpc.testnet.near.org"]
 # chain config
 [Chain]
 BlockChain = "near"
-ChainID = "123"
+ChainID = "1001313161555"
 Confirmations = 1
 InitialHeight = 0
-RouterContract = "r1.crossdemo.testnet"
+RouterContract = "r2.crossdemo.testnet"
 
 # token config
 [Token]
-ContractAddress = "demotoken.crossdemo.testnet"
+ContractAddress = "a1.crossdemo.testnet"
 ContractVersion = 6
-Decimals = 18
-RouterContract = "r1.crossdemo.testnet"
+Decimals = 24
+RouterContract = "r2.crossdemo.testnet"
 TokenID = "anyBNB"
 Underlying = "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"
 

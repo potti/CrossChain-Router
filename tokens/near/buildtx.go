@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	defaultGasLimit    uint64 = 50000000000000
+	defaultGasLimit    uint64 = 70_000_000_000_000
 	swapinMethod       string = "any_swap_in"
 	swapinNativeMethod string = "swap_in_native"
 )
@@ -84,7 +84,6 @@ func (b *Bridge) BuildRawTransaction(args *tokens.BuildTxArgs) (rawTx interface{
 	if err != nil {
 		return nil, err
 	}
-
 	blockHash, getBlockHashErr := b.GetLatestBlockHash()
 	if getBlockHashErr != nil {
 		return nil, getBlockHashErr
@@ -95,9 +94,9 @@ func (b *Bridge) BuildRawTransaction(args *tokens.BuildTxArgs) (rawTx interface{
 	}
 	var actions []Action
 	if args.ERC20SwapInfo.ForNative {
-		actions = createFunctionCall(args.SwapID, swapinNativeMethod, multichainToken, receiver, amount.String(), args.FromChainID.String(), *extra.Gas)
+		actions = createFunctionCall(args.SwapID, swapinNativeMethod, multichainToken, receiver, amount.String(), args.FromChainID.String(), args.LogIndex, *extra.Gas)
 	} else {
-		actions = createFunctionCall(args.SwapID, swapinMethod, multichainToken, receiver, amount.String(), args.FromChainID.String(), *extra.Gas)
+		actions = createFunctionCall(args.SwapID, swapinMethod, multichainToken, receiver, amount.String(), args.FromChainID.String(), args.LogIndex, *extra.Gas)
 	}
 	routerContract := b.GetRouterContract(multichainToken)
 	rawTx = createTransaction(args.From, nearPubKey, routerContract, *extra.Sequence, blockHashBytes, actions)
@@ -208,14 +207,15 @@ func createTransaction(
 	return &tx
 }
 
-func createFunctionCall(txHash, methodName, token, to, amount, fromChainID string, gas uint64) []Action {
+func createFunctionCall(txHash, methodName, token, to, amount, fromChainID string, logIndex int, gas uint64) []Action {
 	log.Info("createFunctionCall", "txHash", txHash, "methodName", methodName, "token", token, "to", to, "amount", amount, "fromChainID", fromChainID)
+	swapId := txHash + fmt.Sprint(logIndex)
 	var argsBytes []byte
 	switch methodName {
 	case swapinMethod:
-		argsBytes = buildAnySwapInArgs(txHash, token, to, amount, fromChainID)
+		argsBytes = buildAnySwapInArgs(swapId, token, to, amount, fromChainID)
 	case swapinNativeMethod:
-		argsBytes = buildSwapInNativeArgs(txHash, to, amount, fromChainID)
+		argsBytes = buildSwapInNativeArgs(swapId, to, amount, fromChainID)
 	default:
 		log.Fatalf("unknown method name: '%v'", methodName)
 	}
