@@ -19,6 +19,21 @@ https://github.com/anyswap/CrossChain-Router/tree/feature/near#readme
 ## mpc部署文档 
 https://github.com/anyswap/FastMulThreshold-DSA/wiki/keygen-and-sign-workflow
 
+## 合约参考(已验证)
+> bsc_testnet  
+config: 0x46De04FCd8ffA59B9F1eF773Ae8AD99FE8862990  
+router: 0xBa1Ccfd2Fd887302275Bb294fC2E1e8aEB613eA7  
+anyToken: 0xd5ec3ee2d81619896a65dd9e77e49602addc23bc
+
+> near_testnet  
+router: r2.crossdemo.testnet  
+anytoken: a2.crossdemo.testnet  
+underlying: demotoken.crossdemo.testnet
+
+> 交易参考(bsc->near)  
+https://testnet.bscscan.com/tx/0x9174d19f6bea821da729b40afa28b6dcdb5e4ee12b317f2e1d1d4bdbaddfa6f0
+https://explorer.testnet.near.org/transactions/2XtpKiXfeQd6oy1Q7mQuShTDtpNyzCYfYK1mKfwdPCZD
+
 ***
 特别强调  
 >1) mpc公钥和near公钥的关系  
