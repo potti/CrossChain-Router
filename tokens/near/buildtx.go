@@ -199,7 +199,7 @@ func createTransaction(
 ) *RawTransaction {
 	var tx RawTransaction
 	tx.SignerID = signerID
-	tx.PublicKey = publicKey
+	tx.PublicKey = *publicKey
 	tx.ReceiverID = receiverID
 	tx.Nonce = nonce
 	copy(tx.BlockHash[:], blockHash)

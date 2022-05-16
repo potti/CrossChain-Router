@@ -142,7 +142,7 @@ type Transfer struct {
 // A Transaction encodes a NEAR transaction.
 type RawTransaction struct {
 	SignerID   string
-	PublicKey  *PublicKey
+	PublicKey  PublicKey
 	Nonce      uint64
 	ReceiverID string
 	BlockHash  [32]byte

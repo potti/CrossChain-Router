@@ -5,6 +5,7 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -46,7 +47,7 @@ func (b *Bridge) MPCSignTransaction(rawTx interface{}, args *tokens.BuildTxArgs)
 	if err != nil {
 		return nil, "", err
 	}
-	mpcSignPubkey := common.ToHex(nearPubkey.Bytes())
+	mpcSignPubkey := hex.EncodeToString(nearPubkey.Bytes())
 
 	buf, err := borsh.Serialize(*tx)
 	if err != nil {
